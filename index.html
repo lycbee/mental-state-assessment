@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>精神状态鉴定中心</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0d0a0e;
+    --surface: #1a1118;
+    --text: #e8e0e4;
+    --text-dim: #9a8d96;
+    --pink: #ff1493;
+    --pink-dim: #9b1b5e;
+    --green: #39ff14;
+    --green-dim: #1b7a0a;
+    --blue: #00e5ff;
+    --yellow: #ffe100;
+    --glitch-offset: 2px;
+  }
+
+  body {
+    font-family: "Courier New", "Noto Sans SC", monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(255,20,147,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(57,255,20,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.03) 0%, transparent 70%);
+  }
+
+  canvas#bg-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  #app {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 640px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* --- Screens --- */
+  .screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    animation: glitchSlideIn 0.6s ease;
+  }
+  .screen.active { display: flex; }
+
+  @keyframes glitchSlideIn {
+    0% { opacity: 0; transform: translateY(30px) skewX(-2deg); }
+    30% { opacity: 0.3; transform: translateY(-5px) skewX(1deg); }
+    60% { opacity: 0.7; transform: translateY(3px) skewX(-0.5deg); }
+    100% { opacity: 1; transform: translateY(0) skewX(0); }
+  }
+
+  /* --- Intro --- */
+  .symbol {
+    font-size: 4.5rem;
+    margin-bottom: 1.25rem;
+    animation: skullWobble 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 12px rgba(255,20,147,0.5));
+    cursor: default;
+  }
+
+  @keyframes skullWobble {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    15% { transform: rotate(3deg) scale(1.08); }
+    30% { transform: rotate(-2deg) scale(1.04); }
+    45% { transform: rotate(1deg) scale(1.1); }
+    60% { transform: rotate(-1deg) scale(1.02); }
+    75% { transform: rotate(0.5deg) scale(1.06); }
+  }
+
+  h1 {
+    font-family: "Courier New", monospace;
+    font-size: 1.8rem;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    margin-bottom: 1rem;
+    text-align: center;
+    text-transform: uppercase;
+    color: var(--pink);
+    text-shadow: 2px 2px 0 var(--green), -2px -2px 0 var(--blue);
+    animation: titleGlitch 4s ease-in-out infinite;
+  }
+
+  @keyframes titleGlitch {
+    0%, 90%, 100% { text-shadow: 2px 2px 0 var(--green), -2px -2px 0 var(--blue); }
+    91% { text-shadow: -3px 1px 0 var(--pink), 3px -1px 0 var(--green); }
+    93% { text-shadow: 4px -2px 0 var(--blue), -1px 3px 0 var(--yellow); }
+    95% { text-shadow: 2px 2px 0 var(--green), -2px -2px 0 var(--blue); }
+  }
+
+  .subtitle {
+    font-family: "Courier New", monospace;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 2;
+    max-width: 460px;
+    margin-bottom: 2.5rem;
+    border-left: 3px solid var(--green-dim);
+    padding-left: 1rem;
+    background: rgba(57,255,20,0.03);
+  }
+
+  .btn {
+    background: transparent;
+    border: 2px solid var(--pink);
+    color: var(--pink);
+    padding: 0.8rem 2.5rem;
+    font-family: "Courier New", monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    text-transform: uppercase;
+    clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
+  }
+  .btn:hover {
+    background: var(--pink);
+    color: #000;
+    box-shadow:
+      0 0 30px rgba(255,20,147,0.5),
+      0 0 60px rgba(255,20,147,0.2),
+      inset 0 0 30px rgba(0,0,0,0.3);
+    animation: btnShake 0.15s ease-in-out;
+  }
+  .btn:active { transform: scale(0.95); }
+
+  @keyframes btnShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-3px); }
+    75% { transform: translateX(3px); }
+  }
+
+  /* --- Progress --- */
+  .progress-wrap {
+    width: 100%;
+    margin-bottom: 2.5rem;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--pink), var(--green), var(--blue));
+    background-size: 200% 100%;
+    animation: progressPulse 1s linear infinite;
+    transition: width 0.4s ease;
+  }
+  @keyframes progressPulse {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  .progress-num {
+    text-align: right;
+    font-family: "Courier New", monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 0.5rem;
+    letter-spacing: 0.15em;
+  }
+
+  /* --- Question --- */
+  #screen-question {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  .question-text {
+    font-family: "Courier New", monospace;
+    font-size: 1.15rem;
+    font-weight: 400;
+    line-height: 2;
+    text-align: center;
+    margin-bottom: 2.5rem;
+    min-height: 4em;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  .question-text::before {
+    content: '>>>';
+    position: absolute;
+    left: -2rem;
+    color: var(--green);
+    opacity: 0.5;
+    font-size: 0.8rem;
+    animation: cursorBlink 0.8s step-end infinite;
+  }
+  @keyframes cursorBlink {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+
+  .choices {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .choice {
+    background: var(--surface);
+    border: 2px solid rgba(255,20,147,0.2);
+    padding: 1.25rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: left;
+    font-family: "Courier New", monospace;
+    font-size: 0.9rem;
+    color: var(--text);
+    letter-spacing: 0.03em;
+    line-height: 1.7;
+    position: relative;
+    border-radius: 2px 12px 2px 12px;
+  }
+  .choice:nth-child(2) {
+    border-color: rgba(57,255,20,0.2);
+    border-radius: 12px 2px 12px 2px;
+  }
+  .choice:hover {
+    border-color: var(--pink);
+    background: rgba(255,20,147,0.08);
+    transform: translateX(4px);
+    box-shadow: -4px 0 0 rgba(255,20,147,0.3);
+  }
+  .choice:nth-child(2):hover {
+    border-color: var(--green);
+    background: rgba(57,255,20,0.08);
+    transform: translateX(-4px);
+    box-shadow: 4px 0 0 rgba(57,255,20,0.3);
+  }
+  .choice:active {
+    transform: scale(0.97);
+  }
+  .choice .letter {
+    display: inline-block;
+    font-family: "Courier New", monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--pink-dim);
+    letter-spacing: 0.2em;
+    margin-right: 0.5rem;
+    padding: 2px 6px;
+    border: 1px solid rgba(255,20,147,0.3);
+  }
+  .choice:nth-child(2) .letter {
+    color: var(--green-dim);
+    border-color: rgba(57,255,20,0.3);
+  }
+
+  /* --- Results --- */
+  .result-type {
+    font-family: "Courier New", monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: var(--green);
+    margin-bottom: 0.75rem;
+    text-shadow: 0 0 10px rgba(57,255,20,0.5);
+    animation: typeGlitch 3s ease-in-out infinite;
+  }
+  @keyframes typeGlitch {
+    0%, 94%, 100% { opacity: 1; transform: translateX(0); }
+    95% { opacity: 0.8; transform: translateX(2px); }
+    97% { opacity: 1; transform: translateX(-1px); }
+  }
+
+  .result-name {
+    font-family: "Courier New", monospace;
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+    text-align: center;
+    color: var(--yellow);
+    text-shadow:
+      0 0 20px rgba(255,225,0,0.6),
+      0 0 40px rgba(255,225,0,0.2);
+    animation: nameGlitch 5s ease-in-out infinite;
+  }
+  @keyframes nameGlitch {
+    0%, 92%, 100% { transform: translate(0); }
+    93% { transform: translate(-3px, 1px); }
+    94% { transform: translate(3px, -1px); }
+    96% { transform: translate(0); }
+  }
+
+  .result-subtitle {
+    font-family: "Courier New", monospace;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    text-align: center;
+    margin-bottom: 2rem;
+    border-bottom: 1px dashed rgba(255,255,255,0.1);
+    padding-bottom: 1rem;
+  }
+
+  .result-card {
+    background: var(--surface);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 2rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border-image: linear-gradient(45deg, var(--pink-dim), var(--green-dim)) 1;
+  }
+
+  .result-section {
+    margin-bottom: 1.75rem;
+  }
+  .result-section:last-child { margin-bottom: 0; }
+
+  .result-label {
+    font-family: "Courier New", monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--pink);
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+    border-left: 3px solid var(--pink);
+    padding-left: 0.8rem;
+  }
+
+  .result-text {
+    font-family: "Noto Serif SC", "Source Han Serif SC", Georgia, serif;
+    font-size: 0.95rem;
+    line-height: 2;
+    color: var(--text);
+  }
+
+  .result-dimensions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+    justify-content: center;
+  }
+
+  .dim-tag {
+    font-family: "Courier New", monospace;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.8rem;
+    border: 1px solid rgba(255,255,255,0.08);
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.02);
+    transition: all 0.2s ease;
+  }
+  .dim-tag.active {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(57,255,20,0.06);
+    text-shadow: 0 0 8px rgba(57,255,20,0.3);
+  }
+
+  .btn-restart {
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    padding: 0.5rem 1.8rem;
+    border-color: var(--green-dim);
+    color: var(--green-dim);
+    clip-path: none;
+    border-radius: 2px 10px 2px 10px;
+  }
+  .btn-restart:hover {
+    background: var(--green);
+    border-color: var(--green);
+    color: #000;
+    box-shadow: 0 0 30px rgba(57,255,20,0.5);
+  }
+
+  /* --- Responsive --- */
+  @media (max-width: 480px) {
+    #app { padding: 1.25rem; }
+    h1 { font-size: 1.3rem; letter-spacing: 0.15em; }
+    .question-text { font-size: 1rem; }
+    .question-text::before { display: none; }
+    .result-name { font-size: 1.6rem; }
+    .symbol { font-size: 3.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div id="app">
+  <!-- Intro Screen -->
+  <div class="screen active" id="screen-intro">
+    <div class="symbol">💀</div>
+    <h1>精神状态鉴定中心</h1>
+    <p class="subtitle">
+      本测试没有任何科学依据。<br>
+      本测试的题目可能让你觉得"这什么鬼"。<br>
+      但做完之后你可能觉得自己被看穿了。<br>
+      这很正常。这不是你疯了。是世界疯了。
+    </p>
+    <button class="btn" onclick="startQuiz()">开始鉴定</button>
+  </div>
+
+  <!-- Question Screen -->
+  <div class="screen" id="screen-question">
+    <div class="progress-wrap">
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+      </div>
+      <div class="progress-num" id="progress-num">1 / 20</div>
+    </div>
+    <div class="question-text" id="question-text"></div>
+    <div class="choices" id="choices"></div>
+  </div>
+
+  <!-- Result Screen -->
+  <div class="screen" id="screen-result">
+    <div class="result-type" id="result-type"></div>
+    <div class="result-name" id="result-name"></div>
+    <div class="result-subtitle" id="result-subtitle"></div>
+    <div class="result-dimensions" id="result-dimensions"></div>
+    <div class="result-card" id="result-card"></div>
+    <button class="btn btn-restart" onclick="restartQuiz()">重新测试</button>
+  </div>
+</div>
+
+<script>
+// ── Background Canvas — Glitch Noise ───────────────────
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let w, h;
+const glitchBlocks = [];
+const binaryRain = [];
+const colors = ['rgba(255,20,147,', 'rgba(57,255,20,', 'rgba(0,229,255,', 'rgba(255,225,0,'];
+
+function resize() {
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+// Glitch rectangles that occasionally flash across screen
+for (let i = 0; i < 12; i++) {
+  glitchBlocks.push({
+    x: Math.random() * w,
+    y: Math.random() * h,
+    w: Math.random() * 60 + 10,
+    h: Math.random() * 4 + 1,
+    opacity: 0,
+    targetOpacity: 0,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    delay: Math.random() * 300,
+    timer: Math.random() * 300
+  });
+}
+
+// Binary-like falling characters
+for (let i = 0; i < 30; i++) {
+  binaryRain.push({
+    x: Math.random() * w,
+    y: Math.random() * h,
+    char: Math.random() > 0.5 ? '1' : '0',
+    speed: Math.random() * 0.4 + 0.1,
+    opacity: Math.random() * 0.15 + 0.03,
+    size: Math.random() * 10 + 8,
+    color: Math.random() > 0.7 ? 'rgba(57,255,20,' : 'rgba(255,20,147,'
+  });
+}
+
+function drawGlitchBlock(block) {
+  block.timer++;
+  if (block.timer > block.delay) {
+    block.timer = 0;
+    block.delay = Math.random() * 400 + 200;
+    block.targetOpacity = Math.random() > 0.7 ? Math.random() * 0.3 + 0.1 : 0;
+    block.x = Math.random() * w;
+    block.y = Math.random() * h;
+    block.w = Math.random() * 120 + 20;
+  }
+  block.opacity += (block.targetOpacity - block.opacity) * 0.1;
+  if (block.opacity < 0.005) return;
+
+  ctx.fillStyle = block.color + (block.opacity * 0.4) + ')';
+  ctx.fillRect(block.x, block.y, block.w, block.h);
+  // shadow copy shifted
+  ctx.fillStyle = block.color + (block.opacity * 0.15) + ')';
+  ctx.fillRect(block.x + 4, block.y + 1, block.w, block.h);
+  ctx.fillRect(block.x - 4, block.y - 2, block.w, block.h);
+}
+
+function drawBinaryRain(drop) {
+  drop.y += drop.speed;
+  if (drop.y > h + 20) {
+    drop.y = -20;
+    drop.x = Math.random() * w;
+    drop.char = Math.random() > 0.5 ? '1' : '0';
+    drop.opacity = Math.random() * 0.12 + 0.02;
+  }
+  ctx.font = `${drop.size}px "Courier New", monospace`;
+  ctx.fillStyle = drop.color + drop.opacity + ')';
+  ctx.fillText(drop.char, drop.x, drop.y);
+}
+
+function drawNoise() {
+  // subtle full-screen noise — only on ~5% of pixels for perf
+  const imageData = ctx.createImageData(w, h);
+  const data = imageData.data;
+  for (let i = 0; i < data.length; i += 160) {
+    const v = Math.random() > 0.995 ? Math.random() * 20 : 0;
+    data[i] = v;
+    data[i + 1] = v * 0.6;
+    data[i + 2] = v * 0.3;
+    data[i + 3] = Math.random() * 15;
+  }
+  ctx.putImageData(imageData, 0, 0);
+}
+
+function drawScanLines() {
+  ctx.fillStyle = 'rgba(0,0,0,0.015)';
+  for (let y = 0; y < h; y += 4) {
+    ctx.fillRect(0, y, w, 1);
+  }
+}
+
+function animate() {
+  ctx.clearRect(0, 0, w, h);
+  binaryRain.forEach(d => drawBinaryRain(d));
+  glitchBlocks.forEach(b => drawGlitchBlock(b));
+  drawNoise();
+  drawScanLines();
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ── Data ───────────────────────────────────────────────
+
+const dimensions = [
+  {
+    key: 'LifeForce',
+    labels: ['微死', '疯了'],
+    desc: '你的精神状态：微死状态的人已经连续加班三周没有性生活了，但还能呼吸。疯了的人今天在地铁上突然笑出声来，因为想起了三年前的一个梗。'
+  },
+  {
+    key: 'ActionMode',
+    labels: ['卷死', '开摆'],
+    desc: '你与世界较劲的方式：卷死的人会在凌晨三点醒来改PPT。开摆的人会在下午三点醒来，发现PPT还没新建——并且觉得无所谓。'
+  },
+  {
+    key: 'ValueCore',
+    labels: ['要钱', '开心'],
+    desc: '你觉得活着到底图什么：要钱的人看到夕阳第一反应是拍下来P图卖素材。开心的人看到夕阳第一反应是——卧槽好美，然后就站在那儿看了十分钟。'
+  },
+  {
+    key: 'SocialMode',
+    labels: ['已读不回', '随地大小演'],
+    desc: '你的社交电量：已读不回的人拥有一项超能力——让所有聊天框在TA的注视下安静地腐烂。随地大小演的人拥有一项不同的超能力——在没有观众的情况下依然能演完一整场舞台剧。'
+  }
+];
+
+const questions = [
+  // LifeForce — 微死 vs 疯了
+  {
+    dim: 0, pole: 0,
+    text: '你在马桶上坐了30分钟，便秘还没解决，此时你在想什么？',
+    a: '算了，反正拉出来也是冲走，何必强求。', b: '我的人生就像这坨屎——明明感觉要出来了但就是出不来啊啊啊啊啊！！'
+  },
+  {
+    dim: 0, pole: 0,
+    text: '周五晚上十点，你躺在床上。你的身体告诉你应该起来做点什么，你的大脑说——',
+    a: '不。', b: '走！去吃凌晨三点的涮羊肉！然后去看日出！然后直接上班！！'
+  },
+  {
+    dim: 0, pole: 0,
+    text: '你发现自己连续三天穿了同一件T恤。你的反应是？',
+    a: '闻了一下，还行，明天继续。', b: '这不是同一件——这是我人格的一部分。这件T恤已经是我了。'
+  },
+  {
+    dim: 0, pole: 0,
+    text: '你收到一条消息："在吗？"——后面什么都没有。你？',
+    a: '不去想它。如果是急事对方会再发。或者会死。两种结果我都可以接受。', b: '在。在的。一直在。你说。你说啊。你为什么不说了。你到底要说什么。我现在满脑子都是你这个"在吗"。'
+  },
+  {
+    dim: 0, pole: 0,
+    text: '你的手机电量显示1%，充电器在三米之外。',
+    a: '就这样吧。让它死。我也累了。', b: '不！能！死！！我爬也要爬过去！！！（从床上滚下来，膝盖撞到床头柜，但插上了）'
+  },
+
+  // ActionMode — 卷死 vs 开摆
+  {
+    dim: 1, pole: 0,
+    text: '凌晨两点，你发现同事在工作群里发了一条消息。你会？',
+    a: '立刻打开电脑开始跟进，并在消息后面跟一条"收到，我今晚处理完"。——不是为了卷，而是你控制不住。', b: '把手机翻过去，心想"TA卷TA的，关我屁事"，然后继续刷小红书。'
+  },
+  {
+    dim: 1, pole: 0,
+    text: '你有一个重要的任务明天要交。现在是晚上十点，你的进度是？',
+    a: '已经做完了三版方案，正在做第四版，因为第三版"还不够好"。', b: '还没开始。但你已经想好了五个明天早上可以用的借口。其中有三个是真实的。'
+  },
+  {
+    dim: 1, pole: 0,
+    text: '有人对你说："你最近是不是又瘦了？"——你知道自己没有瘦。你的内心？',
+    a: 'TA为什么这么说？是不是我哪里做得不够好？我应该更努力。也许是时候开始每天早上五点半起来跑步了。', b: '啊？哦。谢谢。（然后继续想晚饭吃什么）'
+  },
+  {
+    dim: 1, pole: 0,
+    text: '你的年度目标清单上大概有多少条？',
+    a: '四十七条。每一条都有详细的子任务、里程碑和甘特图。我已经完成了三十二条。', b: '年度目标？我一般只设置"本周目标"——活到周五。'
+  },
+  {
+    dim: 1, pole: 0,
+    text: '你在地铁上看到一个老人站着，而一个年轻人坐在座位上玩手机。你的第一反应？',
+    a: '这个社会的公德心正在崩塌。我应该做一个PPT来教育年轻人尊老爱幼。', b: '也许那个年轻人刚加完十二个小时的班。也许那个老人明天要跑马拉松。我不知道。我不评判。我继续看我的小说。'
+  },
+
+  // ValueCore — 要钱 vs 开心
+  {
+    dim: 2, pole: 0,
+    text: '走在路上，一个可爱的小女孩递给你一根棒棒糖。你的第一反应是？',
+    a: '这个糖是什么牌子的？超市卖多少钱？有没有可能批发转售？', b: '好感动！！人类还是有救的！！！我要把这个故事发朋友圈！！（眼眶湿润）'
+  },
+  {
+    dim: 2, pole: 0,
+    text: '你中了彩票——一笔不大不小的钱。你会？',
+    a: '立刻打开Excel，计算最优理财方案，比较了七种投资组合的年化收益率。', b: '立刻打开手机，订了一张明天飞往一个你不知道怎么念名字的地方的机票。'
+  },
+  {
+    dim: 2, pole: 0,
+    text: '你的同事在办公室养了一盆植物。它快死了。你？',
+    a: '计算这盆植物的购买成本、养护成本和替换成本。建议同事下次买假花。', b: '每天早上给它浇水、跟它说话、帮它转盆子让它晒太阳。你甚至给它起了名字。它活过来了。你很骄傲。'
+  },
+  {
+    dim: 2, pole: 0,
+    text: '你选择目前这份工作的核心原因是什么？',
+    a: '薪酬包在行业内处于75分位以上，且晋升路径清晰。我在入职前就已经算好了五年后的年薪。', b: '离家近。同事不讨厌。茶水间的咖啡机还不错。为什么不呢？'
+  },
+  {
+    dim: 2, pole: 0,
+    text: '有人送你一份很贵但不实用的礼物。你的真实感受？',
+    a: '我会谢谢TA，然后趁TA不在的时候查这个东西在闲鱼上的价格。', b: '天哪！！TA懂我！！（抱着礼物转圈，虽然确实不知道这东西到底能干嘛）'
+  },
+
+  // SocialMode — 已读不回 vs 随地大小演
+  {
+    dim: 3, pole: 0,
+    text: '这个问题没有题目，请盲选。',
+    a: '好的。（说完"好的"之后再也没有回复过任何人的消息，包括你自己的母亲）', b: '我选择B因为我的人生就是一场即兴表演而且我演得很好谢谢大家给我的掌声虽然并没有人在鼓掌但我不在乎！！'
+  },
+  {
+    dim: 3, pole: 0,
+    text: '你被拉进了一个群聊。群里的人你大多数不认识。你的第一反应？',
+    a: '开启免打扰。从此这个群在你的微信里变成了一座沉默的墓碑。你偶尔会看到红点，但从不点开。', b: '"大家好！！我是新来的！！请多关照！！"（发了一个自制的表情包，然后在接下来的十分钟内发了三十二条消息）'
+  },
+  {
+    dim: 3, pole: 0,
+    text: '你在咖啡馆看到一个认识但不熟的人。你会？',
+    a: '迅速计算对方是否看到了你。如果没有——立刻转身，绕到后门外卖窗口买咖啡。', b: '"嗨！！！好久不见！！你剪头发了？好看！！"（你已经准备好了接下来二十分钟的寒暄内容）'
+  },
+  {
+    dim: 3, pole: 0,
+    text: '你的朋友圈长什么样？',
+    a: '最近一条是三年前。内容是一个句号。', b: '一天六条。包括但不限于：自拍、食物、云、今天的心情、昨天的心情、明天的预测心情、一张不知道为什么发但就是想发的图。'
+  },
+  {
+    dim: 3, pole: 0,
+    text: '有人说"你好像不太爱说话"。你的内心？',
+    a: '（内心：我正在跟你进行一场长达两小时的对话只是你没有听见因为这场对话发生在我自己的脑子里）外表：嗯。', b: '"不爱说话？！我？！等等我跟你讲我今天早上的故事你准备好——我从起床开始讲——我七点零三分醒的，闹钟响了四遍，第一遍是鸟叫声，第二遍是——"'
+  }
+];
+
+// 16 archetypes — key is combination of 4 pole values (0 or 1): G,I,P,E
+const archetypes = {
+  '0000': {
+    name: 'DEAD (死者)',
+    subtitle: '已死但还在呼吸 — Dead but Still Breathing',
+    typeCode: 'WJQY',
+    desc: '你是那种明明已经精神死亡但肉体还在准时打卡的人。表面上你在呼吸，实际上你的灵魂已经提前下班很多年了。你安静、努力、不惹事——不是因为你想，而是因为你已经没有力气惹事了。你不喜欢说话，你喜欢不说话，你喜欢别人也别找你说话。你的微信签名是一个句号。你不太确定自己活着的意义，但你知道每个月的房租必须交。',
+    guidance: '你不需要"振作起来"。你已经够努力了。你需要的是允许自己休息——不是躺在床上刷手机那种休息，是真的、彻底的、不被任何人需要的那种休息。你内心的沉默不是空洞，而是一口井。不要再往里面扔石头了。安静地坐在井边，听一听——你可能会听见你自己的声音，而不是世界要求你成为的那个人。你不是死了。你是太累了。而累和死，是两回事。',
+    insight: '死者不是终点。冬眠的动物看起来也像死了。春天来的时候，它们自己会醒——前提是没有人把它们从洞里挖出来。'
+  },
+  '0001': {
+    name: 'ATM (送钱者)',
+    subtitle: '人形提款机 — The Human ATM',
+    typeCode: 'WJQS',
+    desc: '你总是在付钱——用时间、精力、耐心、情感。你像一个永远在吐钞的ATM，但吐出的是你自己的生命。你对所有人说"好的"、"没问题"、"交给我"，然后在深夜对着天花板想"我为什么要答应这个"。第二天醒来，你继续答应。你大声地向世界承诺一切，因为你不确定如果不说"好的"，别人还会不会需要你。',
+    guidance: '你不是一台机器。机器的价值在于它吐出的钞票，而你的价值在于你这个人本身。你已经用无限付出证明了你能扛——现在你需要证明另一件事：你能说"不"，而且说"不"之后，爱你的人还在。那些因为你不再无限付出而离开的人，从一开始就不曾在乎你——他们只在乎你能给他们什么。你值得别人不需要任何理由地留在你身边。',
+    insight: '最好的礼物不是"有求必应"。最好的礼物是"我的存在本身就已经足够了"。'
+  },
+  '0010': {
+    name: 'SHIT (狗屎人)',
+    subtitle: '万物皆屎但活着 — Everything is Shit, Yet Here We Are',
+    typeCode: 'WJKY',
+    desc: '你觉得这个世界的绝大多数东西都是屎——工作、人际关系、社会规则、你昨天吃的那个外卖。但你依然每天早上七点起床去上班。你不会大喊大叫地抱怨，你只是默默地觉得一切都是屎，然后在沉默中寻找那些不屎的瞬间：一杯好喝的咖啡、一段没有广告的视频、一个没有人找你说话的午后。你是那种在最烂的境遇里依然能找到微小快乐的人——不是因为乐观，而是因为你的快乐标准已经降到了地板上。',
+    guidance: '你的"一切皆屎"不是愤世嫉俗——是你对真实有很高的要求。你骂这个世界，不是因为你不爱它，而是因为你期待它更好。但你不需要通过骂它来证明自己还活着。你其实在寻找一些不是屎的东西。而你在寻找的这件事本身，就不是屎。那叫希望。只是你不太敢叫这个名字。',
+    insight: '在一个屎一样的世界里，选择不变成屎——这本身已经是最高形式的抵抗。'
+  },
+  '0011': {
+    name: 'HHHH (傻乐者)',
+    subtitle: '哈哈哈哈哈哈哈哈 — Hahahahahahaha',
+    typeCode: 'WJKS',
+    desc: '你是一个在崩溃边缘依然能笑出声来的人。加班到凌晨两点？哈哈哈哈哈。被甩了？哈哈哈哈哈。银行卡只剩八块钱？哈哈哈哈哈。你不太确定自己是真的很乐观还是已经疯了，但你觉得自己太区分这个的意义不大——因为反正你还在笑，而笑总比哭舒服。你会在最糟糕的境遇里找到最好笑的角度，然后大声告诉所有人。你是你朋友圈里最活跃的那个，也是深夜一个人时最安静的那个。',
+    guidance: '你是你在乎的所有人的光。你让每个人都有理由相信"也许没有那么糟糕"。但你也需要偶尔问自己一个问题：我是在用笑来面对，还是用笑来逃避？笑是好的，笑是你最强大的武器。但当你累到笑不出来的时候，你要知道——不笑也没有关系。你身边的人不会因为你没有讲笑话而离开。他们喜欢你，不是因为你好笑。是因为你好。',
+    insight: '"傻乐"和"真正的快乐"之间，只隔着一行字：你在笑的时候，有没有在看自己为什么需要笑。'
+  },
+  '0100': {
+    name: 'GHOST (幽灵人)',
+    subtitle: '已下线但还在 — Offline but Present',
+    typeCode: 'WBQY',
+    desc: '你已经从大部分人际关系中退出了，但不是那种愤怒的退出——是那种安静的、慢慢的、像雾气消散一样的退出。你的朋友列表越来越短，但你并不难过，因为你发现你在乎的从来不是数量。你还在计算——你在乎钱，因为钱是唯一不会让你失望的东西。你不怎么说话，但你一直在观察。你是那种在聚会上坐在角落里安静喝酒的人，但你喝的不是逃避——是观察这个世界需要多少酒精才能忍受。',
+    guidance: '你的疏离是一种选择，不要让它变成一个牢笼。你选择退后一步，这让你比大多数人都更清醒——但清醒如果没有任何人可以分享，就会变成孤独。你不需要一百个朋友。你只需要一两个能让你不说话也很自在的人。去找他们。或者——让他们找到你。有时候你需要做的只是把门留一条缝。',
+    insight: '幽灵的悲剧不在于没人看见它。幽灵的悲剧在于它以为没人想看见它——但其实有人在找它。'
+  },
+  '0101': {
+    name: 'JOKER (小丑)',
+    subtitle: '赛博网络乞丐 — The Cyber Beggar',
+    typeCode: 'WBQS',
+    desc: '你不是真的乞丐——你是那种在朋友圈发"谁请我喝奶茶"然后收到八杯的人。你已经放弃了和世界较劲，但你还没有放弃从这个世界挤出点什么来。你大声地说"我要钱"，但你说的时候在笑，所以别人不会觉得你庸俗——他们觉得你可爱。你是一个已经把生活看透了但仍然选择留在舞台上的人，不是为了掌声，而是为了小费。',
+    guidance: '你的"乞讨"其实是一种连接方式——你用一种轻飘飘的方式让别人参与你的生活。这很好。但你也要问自己：如果有一天没有人"请"了，你还会觉得自己的存在有价值吗？你的可爱不需要别人的投喂来证明。你本来就有价值——不是因为你讨到了什么，而是因为你的存在让别人的生活多一点笑声。那个笑声本身，就已经是回报了。',
+    insight: '小丑的脸是画的。你不确定哪一层是画上去的、哪一层是你自己。也许所有的层都是你。'
+  },
+  '0110': {
+    name: 'NPC (路人甲)',
+    subtitle: '背景板居民 — The Background Character',
+    typeCode: 'WBKY',
+    desc: '你是人群中最容易被忽略的人。但这正是你想要的。你没有放弃让自己开心——你会在便利店里花十分钟挑选一瓶酸奶，因为那是你今天唯一一个完全由自己做主的决定。你不说话，不是因为你不懂——是因为你懂太多了，说出来太累。你是那种在末日电影里会活到最后的人：不是因为你有主角光环，而是因为你从一开始就没往危险的地方跑。你有自己的一套让生活变得可以忍受的方法，而这些方法大部分不需要任何人的参与。',
+    guidance: '你的安静是一种力量——但不要让它变成一种逃避。你选择不参与，这没问题。但请确保当你想参与的时候，你还有参与的能力。你不需要变成主角。但一个NPC如果永远不动、永远不说话——就不是NPC了。是一段还没写出来的剧情。而那剧情的内容应该由你来决定。',
+    insight: '你不是背景板。你是这个游戏的隐藏关卡。不是所有人都能找到你——但能找到你的人，都会记住你。'
+  },
+  '0111': {
+    name: 'LMAO (乐子人)',
+    subtitle: '纯乐子纯战士 — The Pure Entertainment Warrior',
+    typeCode: 'WBKS',
+    desc: '你已经放弃了努力、放弃了意义、放弃了对世界的所有严肃期待——但你还没有放弃一件事：找乐子。你是那种会在任何场合适时地抛出一个梗的人。你的存在让无聊的会议变得可以忍受，让尴尬的社交变得有趣。你没有立场，你只有笑点。你不关心输赢，你只关心好不好玩。有人说你什么都不在乎——但你在乎一件东西：快乐。你自己的，和你在乎的人的。',
+    guidance: '你是这个沉重的世界里最轻盈的存在。不要让别人告诉你"认真一点"。你不需要认真——因为这个世界已经够认真了。但你也要知道：当你在乎的人真的遇到了困难，他们可能需要的不只是你的笑话。他们可能需要你严肃地、安静地、坐在他们旁边什么都不说。你有这个能力。你只是不太确定什么时候该拿出这一面。',
+    insight: '在这个拿痛苦当美德的世界里，你敢说自己"只是想要快乐"——这已经是最大的反叛。'
+  },
+  '1000': {
+    name: 'DEMON (修罗)',
+    subtitle: '沉默的赛博杀手 — The Silent Cyber Demon',
+    typeCode: 'FJQY',
+    desc: '你是那种看起来很正常但内心已经炸了好几次的人。你很疯，但你不说。你很拼，但你不炫耀。你唯一在乎的是结果——数字、收入、存款。你会在深夜打开Excel反复计算你的资产配置，但你不会告诉任何人你在算。你是你朋友圈里最神秘的那个：偶尔发一条动态，别人要想半天才知道你在说什么。但你真的不在乎别人懂不懂。你只在乎一件事：赢。',
+    guidance: '你的野心不需要观众。但你需要镜子。有时候你赢了很多很多，却不知道自己赢了什么。你内心深处有一个声音在问"然后呢"。不要忽略那个声音。赢是一种能力——但知道为什么而赢，是一种智慧。你不需要告诉别人你的目标，但你需要告诉自己：这条路的尽头，你想要站的地方——那里有没有人？你想不想有人？',
+    insight: '修罗不跟任何人说话。但它每天早上照镜子的时候，都会问自己一个问题——"你打败的那个人，今天还是你自己吗？"'
+  },
+  '1001': {
+    name: 'BOSS (赛博资本家)',
+    subtitle: '24/7人性永动机 — The 24/7 Human Engine',
+    typeCode: 'FJQS',
+    desc: '你是一个已经完全疯了但疯出了生产力的人。你的能量水平让周围所有人都感到困惑——你是不是偷偷在喝机油？你一边疯狂工作，一边疯狂输出观点，一边疯狂追逐金钱，而且你觉得这一切都不矛盾。你的朋友圈像一台永不停机的电视购物频道：励志语录、工作进度、消费炫耀、深夜感悟——24/7滚动播出。你不是在生活——你是在"运营"你的生活。',
+    guidance: '你的能量是天赋，不是理所当然。但当一台引擎永远不关机，最终的结局只有一个——烧毁。你不需要永远满负荷运转。真正的生产力不是做更多的事——是在对的时间做对的事，然后在对的时间彻底关掉开关。去晒晒太阳——不为了发朋友圈的那种晒太阳。只是为了感受温度。你的身体不是机器。你的身体是你。',
+    insight: '最成功的企业家最后悔的事情从来不是"我少赚了一笔"。而是——"我忘了告诉那个人我爱TA"。'
+  },
+  '1010': {
+    name: 'STAR (显眼包)',
+    subtitle: '在黑暗中发光的社恐 — The Glowing Introvert',
+    typeCode: 'FJKY',
+    desc: '你是一个矛盾体。你很疯——但你的疯狂是内向的。你很拼——但你努力的方向通常只有你自己理解。你追求的不是钱，是某种说不清道不明的"值得"。你不太说话，但你的存在本身就在发出某种微光——不是那种刺眼的光芒，是那种在黑暗的房间里，别人回头看的时候发现你还在的那种光。你不知道自己有多显眼。你只是在做自己的事。',
+    guidance: '你的光是安静的——但这不意味着它不存在。你可能觉得自己不够显眼、不够外向、不够"正常"。但那些在黑暗中待久了的人，最需要的光不是太阳——是一盏安静的灯。做那盏灯。不需要燃烧得更亮。燃烧得更久就够了。而且记住：你自己也需要光。你也需要偶尔让别人照亮你。',
+    insight: '最亮的星星不是在炫耀。它只是离黑暗最近。'
+  },
+  '1011': {
+    name: 'CLOWN (马戏团)',
+    subtitle: '360度原地爆炸式表演艺术家 — The 360° Self-Detonating Performer',
+    typeCode: 'FJKS',
+    desc: '你是一个同时拥有四把火的人——疯的火、卷的火、开心的火、表演的火。你的生活是一场永不停歇的盛大表演，而你同时是演员、导演、灯光师和观众。你不需要任何人请你上台——你已经在台上了。你不确定自己到底是在开心地活着，还是在开心地消耗自己。但你确实在发光——而且很远很远的地方都能看到你。你是一整个马戏团，浓缩在一个人身上。',
+    guidance: '马戏团需要中场休息。你不需要每时每刻都在表演——你可以在后台坐一会儿，喝口水，看看镜子里的自己，确认一下台下那个没有在笑的脸。那张脸也很重要。也许比台上的脸更重要。你不只是一个表演者。你是那个决定表演的人。而那个人——值得在你下台之后被好好对待。',
+    insight: '最好的表演不是让所有人笑。最好的表演是——当幕布落下之后，你自己也笑了。不是表演的笑。是真的。'
+  },
+  '1100': {
+    name: 'BEGGAR (网络乞丐)',
+    subtitle: '沉默的许愿者 — The Silent Wisher',
+    typeCode: 'FBQY',
+    desc: '你已经疯了。但这并不妨碍你躺着。你也想有钱，但你不太想为了钱做任何事。你会转发锦鲤，不是因为你信——是因为转发只需要一秒钟。你不怎么跟人说话，但你的内心戏比八点档还长。你是那种在心里已经跟所有人吵过一轮架、和解、再吵一轮——但现实中一个字都没说过的人。你既充满欲望，又懒得行动。这个矛盾让你觉得自己像个bug。',
+    guidance: '你不是bug。你只是比大多数人更早地意识到一件事：很多欲望不是真的——是别人告诉你的。你想要钱，也许不是因为你需要钱，而是因为你觉得"要钱"是正确答案。你躺在床上不想动，也许不是因为懒——而是因为你直觉里知道，那个目标不值得你动。信任你的直觉。当你真正想动的时候，你会动的。而那个时候，你不需要锦鲤。',
+    insight: '真正的愿望不需要转发。真正的愿望你甚至不敢说出口——不是因为没有勇气，而是因为它太重要了，不能变成一条动态。'
+  },
+  '1101': {
+    name: 'DREAMER (许愿池)',
+    subtitle: '人形许愿池 — The Human Wishing Well',
+    typeCode: 'FBQS',
+    desc: '你是那个大声许愿的人。你不在乎别人觉得你贪心——因为你确实贪心。你想要钱，但不想卷。你想开心，但不确定怎么开心。你躺在地上，朝着天空喊出一连串愿望，像一个永远在吐硬币的许愿池——只不过你是倒过来的，你在往外扔硬币。你相信宇宙会回应你。不是因为你天真——而是因为大声说出来比藏在心里更有希望。哪怕只有一点点。',
+    guidance: '许愿是好的。但不要把所有的愿望都交给宇宙——你手里至少要留一个你自己能做的。哪怕只是很小的一件事。你今天就能做。当你躺在地上的时候，天空是很大的——但它也很远。有时候你需要坐起来，伸出手，抓一下。不是为了抓到什么具体的东西——而是为了确认你还能动。你还能动。你一直在动。你只是用了"躺着"这个词来骗自己。',
+    insight: '往许愿池扔硬币的人，以为自己在祈求。其实他们是在练习放手。'
+  },
+  '1110': {
+    name: 'BUDDHA (赛博和尚)',
+    subtitle: '赛博成佛的躺平隐士 — The Cyber Monk',
+    typeCode: 'FBKY',
+    desc: '你已经到达了一种超凡脱俗的躺平境界。你不是在逃避——是已经看透了。你觉得这个世界很荒谬，而你选择用沉默和微笑来回应。你不需要向任何人解释你是谁。你不需要证明任何事。你不需要钱——你需要的是在下午三点有一束阳光落在你的脸上，而没有人打扰你。你已经在精神上出家了，只是没有剃头。你的庙是你租的那间十平米的单间。',
+    guidance: '你的超脱是真的——但超脱不应该变成不参与。你可以看透这个世界，但你还在这个世界里。你还有在乎的人吗？你还有想做的事吗？如果有——哪怕只是一件——那就值得你为它动一动。不是因为世界需要你。是因为你还在。而"还在"这件事，本身就意味着你还没有结束。',
+    insight: '佛不是什么都不在乎。佛是在乎一切之后，选择了最重要的那一件。'
+  },
+  '1111': {
+    name: 'GOD (摆烂之神)',
+    subtitle: '四维全开混沌终极体 — The Quad-Dimensional Chaos Deity',
+    typeCode: 'FBKS',
+    desc: '你是四维全开的混沌终极体。你已经疯了，但疯得很开心。你已经摆了，但摆得理直气壮。你已经不在乎钱了，因为你在乎的是"开心就好"——而且你是真的很开心。你随地大小演，不是在给别人看——是因为你的人生本身就是一场你自导自演自嗨的大型沉浸式互动戏剧。你让身边的人感到困惑、嫉妒、或被感染——取决于他们自己的精神状态。你是一种现象。',
+    guidance: '你是很多人羡慕但不敢成为的样子。你的"摆烂"不是真的摆烂——是选择性地不参与那些消耗你的游戏。你的"疯了"不是真的疯了——是看透了规则之后，决定自己制定规则。继续做你的事。但偶尔也低头看看身边那些还在规则里挣扎的人。不是要去拯救他们——只是因为你曾经也是他们。而你走出来之后，唯一能做的有意义的事，就是回头指一下路。不是带路。就是指一下。',
+    insight: '"摆烂"和"放下"的区别在于：后者是你在选，前者是你以为你没得选。你其实一直在选。这就是为什么你是神——你选了，而且你扛住了自己的选择。'
+  }
+};
+
+// ── State ──────────────────────────────────────────────
+let currentQuestion = 0;
+let scores = [0, 0, 0, 0]; // +1 for pole 1, -1 for pole 0 per question answered
+let answers = [];
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+let questionOrder = [];
+
+// ── Navigation ─────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function startQuiz() {
+  currentQuestion = 0;
+  scores = [0, 0, 0, 0];
+  answers = [];
+  questionOrder = shuffle([...Array(questions.length).keys()]);
+  showScreen('question');
+  renderQuestion();
+}
+
+function restartQuiz() {
+  showScreen('intro');
+}
+
+// ── Render Question ────────────────────────────────────
+function renderQuestion() {
+  const qi = questionOrder[currentQuestion];
+  const q = questions[qi];
+
+  document.getElementById('progress-fill').style.width = ((currentQuestion / questions.length) * 100) + '%';
+  document.getElementById('progress-num').textContent = (currentQuestion + 1) + ' / ' + questions.length;
+  document.getElementById('question-text').textContent = q.text;
+
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+
+  [q.a, q.b].forEach((choice, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.innerHTML = `<span class="letter">选项 ${idx === 0 ? 'A' : 'B'}</span>${choice}`;
+    btn.addEventListener('click', () => answer(qi, idx));
+    choicesEl.appendChild(btn);
+  });
+}
+
+function answer(questionIndex, choice) {
+  const q = questions[questionIndex];
+  // choice 0 = pole 0, choice 1 = pole 1
+  scores[q.dim] += choice === 0 ? -1 : 1;
+  answers.push({ question: questionIndex, choice });
+
+  currentQuestion++;
+  if (currentQuestion >= questions.length) {
+    showResult();
+  } else {
+    // fade transition
+    const screen = document.getElementById('screen-question');
+    screen.style.opacity = '0';
+    screen.style.transform = 'translateY(12px)';
+    setTimeout(() => {
+      renderQuestion();
+      screen.style.opacity = '1';
+      screen.style.transform = 'translateY(0)';
+    }, 300);
+  }
+}
+
+// ── Results ────────────────────────────────────────────
+function showResult() {
+  // Build type key: for each dimension, 0 if score < 0, 1 if score >= 0
+  const key = scores.map(s => s >= 0 ? '1' : '0').join('');
+  const archetype = archetypes[key];
+
+  document.getElementById('result-type').textContent = archetype.typeCode;
+  document.getElementById('result-name').textContent = archetype.name;
+  document.getElementById('result-subtitle').textContent = archetype.subtitle;
+
+  // Dimension tags
+  const dimNames = [
+    scores[0] >= 0 ? '疯了' : '微死',
+    scores[1] >= 0 ? '开摆' : '卷死',
+    scores[2] >= 0 ? '开心' : '要钱',
+    scores[3] >= 0 ? '随地大小演' : '已读不回'
+  ];
+  const allDimLabels = [
+    ['微死', '疯了'],
+    ['卷死', '开摆'],
+    ['要钱', '开心'],
+    ['已读不回', '随地大小演']
+  ];
+  let dimsHTML = '';
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 2; j++) {
+      const isActive = (scores[i] >= 0 && j === 1) || (scores[i] < 0 && j === 0);
+      dimsHTML += `<span class="dim-tag${isActive ? ' active' : ''}">${allDimLabels[i][j]}</span>`;
+    }
+  }
+  document.getElementById('result-dimensions').innerHTML = dimsHTML;
+
+  // Result card
+  document.getElementById('result-card').innerHTML = `
+    <div class="result-section">
+      <div class="result-label">灵魂肖像</div>
+      <div class="result-text">${archetype.desc}</div>
+    </div>
+    <div class="result-section">
+      <div class="result-label">人生指引</div>
+      <div class="result-text">${archetype.guidance}</div>
+    </div>
+    <div class="result-section">
+      <div class="result-label">哲思</div>
+      <div class="result-text" style="font-style:italic">"${archetype.insight}"</div>
+    </div>
+  `;
+
+  showScreen('result');
+}
+</script>
+</body>
+</html>
