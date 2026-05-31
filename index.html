@@ -10,21 +10,21 @@
   @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap');
 
   :root {
-    --bg: #0d0a0e;
-    --surface: #1a1118;
-    --text: #e8e0e4;
-    --text-dim: #9a8d96;
-    --pink: #ff1493;
-    --pink-dim: #9b1b5e;
-    --green: #39ff14;
-    --green-dim: #1b7a0a;
-    --blue: #00e5ff;
-    --yellow: #ffe100;
-    --glitch-offset: 2px;
+    --bg: #0a0614;
+    --surface: #1a0a2e;
+    --surface-light: #2d1b4e;
+    --text: #ffffff;
+    --text-dim: #94a3b8;
+    --purple: #7c3aed;
+    --purple-light: #a78bfa;
+    --blue: #3b82f6;
+    --blue-light: #60a5fa;
+    --gold: #fbbf24;
+    --gradient: linear-gradient(135deg, #7c3aed, #3b82f6);
   }
 
   body {
-    font-family: "Courier New", "Noto Sans SC", monospace;
+    font-family: "Noto Serif SC", "Source Han Serif SC", Georgia, serif;
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
@@ -33,9 +33,9 @@
     align-items: center;
     justify-content: center;
     background-image:
-      radial-gradient(ellipse at 20% 20%, rgba(255,20,147,0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 80%, rgba(57,255,20,0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 50%, rgba(0,229,255,0.03) 0%, transparent 70%);
+      radial-gradient(ellipse at 20% 20%, rgba(124,58,237,0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(59,130,246,0.1) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(167,139,250,0.05) 0%, transparent 70%);
   }
 
   canvas#bg-canvas {
@@ -128,10 +128,10 @@
 
   .btn {
     background: transparent;
-    border: 2px solid var(--pink);
-    color: var(--pink);
+    border: 2px solid var(--purple);
+    color: var(--purple-light);
     padding: 0.8rem 2.5rem;
-    font-family: "Courier New", monospace;
+    font-family: "Noto Serif SC", serif;
     font-size: 0.95rem;
     font-weight: 700;
     letter-spacing: 0.15em;
@@ -142,11 +142,11 @@
     clip-path: polygon(8px 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
   }
   .btn:hover {
-    background: var(--pink);
-    color: #000;
+    background: var(--gradient);
+    color: #fff;
     box-shadow:
-      0 0 30px rgba(255,20,147,0.5),
-      0 0 60px rgba(255,20,147,0.2),
+      0 0 30px rgba(124,58,237,0.5),
+      0 0 60px rgba(59,130,246,0.2),
       inset 0 0 30px rgba(0,0,0,0.3);
     animation: btnShake 0.15s ease-in-out;
   }
@@ -229,12 +229,12 @@
 
   .choice {
     background: var(--surface);
-    border: 2px solid rgba(255,20,147,0.2);
+    border: 2px solid rgba(124,58,237,0.2);
     padding: 1.25rem 1.5rem;
     cursor: pointer;
     transition: all 0.15s ease;
     text-align: left;
-    font-family: "Courier New", monospace;
+    font-family: "Noto Serif SC", serif;
     font-size: 0.9rem;
     color: var(--text);
     letter-spacing: 0.03em;
@@ -242,21 +242,11 @@
     position: relative;
     border-radius: 2px 12px 2px 12px;
   }
-  .choice:nth-child(2) {
-    border-color: rgba(57,255,20,0.2);
-    border-radius: 12px 2px 12px 2px;
-  }
   .choice:hover {
-    border-color: var(--pink);
-    background: rgba(255,20,147,0.08);
+    border-color: var(--purple);
+    background: rgba(124,58,237,0.1);
     transform: translateX(4px);
-    box-shadow: -4px 0 0 rgba(255,20,147,0.3);
-  }
-  .choice:nth-child(2):hover {
-    border-color: var(--green);
-    background: rgba(57,255,20,0.08);
-    transform: translateX(-4px);
-    box-shadow: 4px 0 0 rgba(57,255,20,0.3);
+    box-shadow: -4px 0 0 rgba(124,58,237,0.3);
   }
   .choice:active {
     transform: scale(0.97);
@@ -279,32 +269,25 @@
 
   /* --- Results --- */
   .result-type {
-    font-family: "Courier New", monospace;
+    font-family: "Noto Serif SC", serif;
     font-size: 0.75rem;
     letter-spacing: 0.3em;
-    color: var(--green);
+    color: var(--blue-light);
     margin-bottom: 0.75rem;
-    text-shadow: 0 0 10px rgba(57,255,20,0.5);
-    animation: typeGlitch 3s ease-in-out infinite;
-  }
-  @keyframes typeGlitch {
-    0%, 94%, 100% { opacity: 1; transform: translateX(0); }
-    95% { opacity: 0.8; transform: translateX(2px); }
-    97% { opacity: 1; transform: translateX(-1px); }
+    text-shadow: 0 0 10px rgba(59,130,246,0.5);
   }
 
   .result-name {
-    font-family: "Courier New", monospace;
+    font-family: "Noto Serif SC", serif;
     font-size: 2.2rem;
     font-weight: 700;
     letter-spacing: 0.05em;
     margin-bottom: 0.5rem;
     text-align: center;
-    color: var(--yellow);
+    color: var(--gold);
     text-shadow:
-      0 0 20px rgba(255,225,0,0.6),
-      0 0 40px rgba(255,225,0,0.2);
-    animation: nameGlitch 5s ease-in-out infinite;
+      0 0 20px rgba(251,191,36,0.6),
+      0 0 40px rgba(251,191,36,0.2);
   }
   @keyframes nameGlitch {
     0%, 92%, 100% { transform: translate(0); }
@@ -394,6 +377,66 @@
     border-color: var(--green);
     color: #000;
     box-shadow: 0 0 30px rgba(57,255,20,0.5);
+  }
+
+  /* 雷达图容器 */
+  .radar-container {
+    width: 100%;
+    max-width: 300px;
+    margin: 2rem auto;
+    position: relative;
+  }
+
+  /* 进度条容器 */
+  .progress-bar-container {
+    width: 100%;
+    margin: 1rem 0;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--surface);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--gradient);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+    position: relative;
+  }
+
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  .progress-value {
+    color: var(--gold);
+    font-weight: 700;
   }
 
   /* --- Responsive --- */
