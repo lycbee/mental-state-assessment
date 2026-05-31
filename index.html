@@ -447,14 +447,130 @@
     font-weight: 700;
   }
 
+  /* Result header */
+  .result-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  /* Overall score */
+  .overall-score {
+    text-align: center;
+    padding: 2rem;
+    background: var(--surface);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+  }
+
+  .score-number {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(251,191,36,0.6);
+    line-height: 1;
+  }
+
+  .score-label {
+    font-size: 1.5rem;
+    color: var(--purple-light);
+    margin: 0.5rem 0;
+  }
+
+  .score-description {
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+
+  /* Composite scores */
+  .composite-scores {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .composite-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background: rgba(124,58,237,0.1);
+    border-radius: 4px;
+    border-left: 3px solid var(--purple);
+  }
+
+  .composite-label {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  .composite-value {
+    color: var(--gold);
+    font-weight: 700;
+  }
+
   /* --- Responsive --- */
+  @media (max-width: 768px) {
+    #app {
+      padding: 1.5rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      letter-spacing: 0.15em;
+    }
+
+    .question-text {
+      font-size: 1rem;
+    }
+
+    .result-name {
+      font-size: 1.8rem;
+    }
+
+    .choice {
+      padding: 1rem 1.25rem;
+      font-size: 0.85rem;
+    }
+
+    .progress-bar-container {
+      margin: 0.8rem 0;
+    }
+  }
+
   @media (max-width: 480px) {
-    #app { padding: 1.25rem; }
-    h1 { font-size: 1.3rem; letter-spacing: 0.15em; }
-    .question-text { font-size: 1rem; }
+    #app {
+      padding: 1rem;
+    }
+
+    h1 {
+      font-size: 1.3rem;
+      letter-spacing: 0.1em;
+    }
+
+    .question-text {
+      font-size: 0.9rem;
+    }
+
     .question-text::before { display: none; }
-    .result-name { font-size: 1.6rem; }
+
+    .result-name {
+      font-size: 1.5rem;
+    }
+
+    .choice {
+      padding: 0.8rem 1rem;
+      font-size: 0.8rem;
+    }
+
     .symbol { font-size: 3.5rem; }
+
+    .composite-scores {
+      grid-template-columns: 1fr;
+    }
+
+    .score-number {
+      font-size: 3rem;
+    }
   }
 </style>
 </head>
@@ -588,14 +704,29 @@ function drawScanLines() {
   }
 }
 
-function animate() {
+// 性能优化：节流函数
+function throttle(func, limit) {
+  let inThrottle;
+  return function() {
+    const args = arguments;
+    const context = this;
+    if (!inThrottle) {
+      func.apply(context, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
+
+// 优化canvas动画
+const animate = throttle(function() {
   ctx.clearRect(0, 0, w, h);
   binaryRain.forEach(d => drawBinaryRain(d));
   glitchBlocks.forEach(b => drawGlitchBlock(b));
   drawNoise();
   drawScanLines();
   requestAnimationFrame(animate);
-}
+}, 16); // 60fps
 animate();
 
 // ── Data ───────────────────────────────────────────────
