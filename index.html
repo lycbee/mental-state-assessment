@@ -464,17 +464,7 @@
 
 <div id="app">
   <!-- Intro Screen -->
-  <div class="screen active" id="screen-intro">
-    <div class="symbol">💀</div>
-    <h1>精神状态鉴定中心</h1>
-    <p class="subtitle">
-      本测试没有任何科学依据。<br>
-      本测试的题目可能让你觉得"这什么鬼"。<br>
-      但做完之后你可能觉得自己被看穿了。<br>
-      这很正常。这不是你疯了。是世界疯了。
-    </p>
-    <button class="btn" onclick="startQuiz()">开始鉴定</button>
-  </div>
+  <div class="screen active" id="screen-intro"></div>
 
   <!-- Question Screen -->
   <div class="screen" id="screen-question">
@@ -1293,6 +1283,23 @@ function showScreen(id) {
   document.getElementById('screen-' + id).classList.add('active');
 }
 
+function renderIntro() {
+  const introHTML = `
+    <div class="intro-content">
+      <div class="symbol">🧠</div>
+      <h1>精神状态鉴定中心</h1>
+      <p class="subtitle">
+        本测试没有任何科学依据。<br>
+        本测试的题目可能让你觉得"这什么鬼"。<br>
+        但做完之后你可能觉得自己被看穿了。<br>
+        这很正常。这不是你疯了。是世界疯了。
+      </p>
+      <button class="btn" onclick="startQuiz()">开始鉴定</button>
+    </div>
+  `;
+  document.getElementById('screen-intro').innerHTML = introHTML;
+}
+
 function startQuiz() {
   currentQuestion = 0;
   scores = { stress: 0, emotion: 0, social: 0, decision: 0 };
@@ -1311,7 +1318,8 @@ function renderQuestion() {
   const qi = questionOrder[currentQuestion];
   const q = questions[qi];
 
-  document.getElementById('progress-fill').style.width = ((currentQuestion / questions.length) * 100) + '%';
+  const progress = ((currentQuestion / questions.length) * 100).toFixed(1);
+  document.getElementById('progress-fill').style.width = progress + '%';
   document.getElementById('progress-num').textContent = (currentQuestion + 1) + ' / ' + questions.length;
   document.getElementById('question-text').textContent = q.text;
 
@@ -1328,13 +1336,25 @@ function renderQuestion() {
 }
 
 function answer(questionIndex, optionIndex) {
-  answers.push({ questionId: questionIndex, optionIndex });
+  const q = questions[questionIndex];
+
+  // 应用选项评分
+  const option = q.options[optionIndex];
+  if (option.scoring) {
+    Object.keys(option.scoring).forEach(dimension => {
+      if (scores[dimension] !== undefined) {
+        scores[dimension] += option.scoring[dimension];
+      }
+    });
+  }
+
+  answers.push({ questionId: q.id, optionIndex });
 
   currentQuestion++;
   if (currentQuestion >= questions.length) {
     showResult();
   } else {
-    // fade transition
+    // 淡出过渡
     const screen = document.getElementById('screen-question');
     screen.style.opacity = '0';
     screen.style.transform = 'translateY(12px)';
@@ -1474,6 +1494,9 @@ function showResult() {
 
   showScreen('result');
 }
+
+// ── Initialize ──────────────────────────────────────────
+renderIntro();
 </script>
 </body>
 </html>
