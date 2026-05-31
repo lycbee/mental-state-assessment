@@ -1446,53 +1446,178 @@ function calculateOverallScore(compositeScores) {
 
 // ── Results ────────────────────────────────────────────
 function showResult() {
-  // Calculate scores from answers
-  const calculatedScores = calculateScores();
+  const rawScores = calculateScores();
 
-  // Build type key: for each dimension, 0 if score < 0, 1 if score >= 0
-  const dimOrder = ['stress', 'emotion', 'social', 'decision'];
-  const key = dimOrder.map(d => calculatedScores[d] >= 0 ? '1' : '0').join('');
-  const archetype = archetypes[key];
-
-  document.getElementById('result-type').textContent = archetype.typeCode;
-  document.getElementById('result-name').textContent = archetype.name;
-  document.getElementById('result-subtitle').textContent = archetype.subtitle;
-
-  // Dimension tags
-  const allDimLabels = {
-    stress: ['抗争', '逃避'],
-    emotion: ['压抑', '宣泄'],
-    social: ['疏离', '连接'],
-    decision: ['理性', '感性']
+  // 计算维度指数
+  const dimensionIndices = {
+    stress: calculateDimensionIndex(rawScores.stress, 'stress'),
+    emotion: calculateDimensionIndex(rawScores.emotion, 'emotion'),
+    social: calculateDimensionIndex(rawScores.social, 'social'),
+    decision: calculateDimensionIndex(rawScores.decision, 'decision')
   };
-  let dimsHTML = '';
-  dimOrder.forEach(d => {
-    const score = calculatedScores[d];
-    const labels = allDimLabels[d];
-    for (let j = 0; j < 2; j++) {
-      const isActive = (score >= 0 && j === 1) || (score < 0 && j === 0);
-      dimsHTML += `<span class="dim-tag${isActive ? ' active' : ''}">${labels[j]}</span>`;
-    }
-  });
-  document.getElementById('result-dimensions').innerHTML = dimsHTML;
 
-  // Result card
-  document.getElementById('result-card').innerHTML = `
-    <div class="result-section">
-      <div class="result-label">灵魂肖像</div>
-      <div class="result-text">${archetype.desc}</div>
+  // 计算综合指数
+  const compositeScores = calculateCompositeScores(dimensionIndices);
+
+  // 计算综合评分
+  const overallScore = calculateOverallScore(compositeScores);
+
+  // 确定原型
+  const archetypeKey = getArchetypeKey(rawScores);
+  const archetype = archetypes[archetypeKey];
+
+  // 渲染结果页面
+  renderResultPage(dimensionIndices, compositeScores, overallScore, archetype);
+}
+
+function getArchetypeKey(scores) {
+  // 检查特殊原型
+  if (scores.stress <= -18 && scores.emotion <= -18 && scores.social <= -18 && scores.decision <= -18) {
+    return 'special_1';
+  }
+  if (scores.stress >= 18 && scores.emotion >= 18 && scores.social >= 18 && scores.decision >= 18) {
+    return 'special_2';
+  }
+  if (scores.decision >= 18 && scores.social >= 18 && scores.emotion <= -18 && scores.stress <= -18) {
+    return 'special_3';
+  }
+  if (scores.decision <= -18 && scores.social <= -18 && scores.emotion >= 18 && scores.stress >= 18) {
+    return 'special_4';
+  }
+
+  // 基础原型映射
+  const key = [
+    scores.stress >= 0 ? '1' : '0',
+    scores.emotion >= 0 ? '1' : '0',
+    scores.social >= 0 ? '1' : '0',
+    scores.decision >= 0 ? '1' : '0'
+  ].join('');
+
+  return key;
+}
+
+function renderResultPage(dimensionIndices, compositeScores, overallScore, archetype) {
+  const resultHTML = `
+    <div class="result-header">
+      <div class="result-type">${archetype.typeCode}</div>
+      <div class="result-name">${archetype.name}</div>
+      <div class="result-subtitle">${archetype.subtitle}</div>
     </div>
-    <div class="result-section">
-      <div class="result-label">人生指引</div>
-      <div class="result-text">${archetype.guidance}</div>
+
+    <div class="result-card">
+      <div class="result-section">
+        <div class="result-label">灵魂肖像</div>
+        <div class="result-text">${archetype.desc}</div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">人生指引</div>
+        <div class="result-text">${archetype.guidance}</div>
+      </div>
+      <div class="result-section">
+        <div class="result-label">哲思</div>
+        <div class="result-text" style="font-style:italic">"${archetype.insight}"</div>
+      </div>
     </div>
-    <div class="result-section">
-      <div class="result-label">哲思</div>
-      <div class="result-text" style="font-style:italic">"${archetype.insight}"</div>
+
+    <div class="result-card">
+      <div class="result-section">
+        <div class="result-label">维度分析</div>
+        ${renderDimensionBars(dimensionIndices)}
+      </div>
     </div>
+
+    <div class="result-card">
+      <div class="result-section">
+        <div class="result-label">综合指数</div>
+        ${renderCompositeScores(compositeScores, overallScore)}
+      </div>
+    </div>
+
+    <button class="btn btn-restart" onclick="restartQuiz()">重新测试</button>
   `;
 
+  document.getElementById('screen-result').innerHTML = resultHTML;
   showScreen('result');
+}
+
+function renderDimensionBars(dimensionIndices) {
+  const dimensions = [
+    { key: 'stress', name: '压力应对', min: '逃避', max: '抗争' },
+    { key: 'emotion', name: '情绪管理', min: '压抑', max: '宣泄' },
+    { key: 'social', name: '社交模式', min: '疏离', max: '连接' },
+    { key: 'decision', name: '决策方式', min: '理性', max: '感性' }
+  ];
+
+  return dimensions.map(dim => `
+    <div class="progress-bar-container">
+      <div class="progress-label">
+        <span>${dim.min}</span>
+        <span class="progress-value">${dimensionIndices[dim.key]}%</span>
+        <span>${dim.max}</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${dimensionIndices[dim.key]}%"></div>
+      </div>
+      <div class="progress-label">
+        <span>${dim.name}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderCompositeScores(compositeScores, overallScore) {
+  const scoreLevel = getScoreLevel(overallScore);
+
+  return `
+    <div class="overall-score">
+      <div class="score-number">${overallScore}</div>
+      <div class="score-label">${scoreLevel.level}</div>
+      <div class="score-description">${scoreLevel.description}</div>
+    </div>
+
+    <div class="composite-scores">
+      <div class="composite-item">
+        <span class="composite-label">社会适应度</span>
+        <span class="composite-value">${compositeScores.socialAdapt}%</span>
+      </div>
+      <div class="composite-item">
+        <span class="composite-label">心理健康度</span>
+        <span class="composite-value">${compositeScores.mentalHealth}%</span>
+      </div>
+      <div class="composite-item">
+        <span class="composite-label">情绪稳定性</span>
+        <span class="composite-value">${compositeScores.emotionalStability}%</span>
+      </div>
+      <div class="composite-item">
+        <span class="composite-label">社交健康度</span>
+        <span class="composite-value">${compositeScores.socialHealth}%</span>
+      </div>
+      <div class="composite-item">
+        <span class="composite-label">决策健康度</span>
+        <span class="composite-value">${compositeScores.decisionHealth}%</span>
+      </div>
+    </div>
+  `;
+}
+
+function getScoreLevel(score) {
+  if (score >= 90) {
+    return { level: '圣人级', description: '你已经超越了世俗的烦恼，达到了精神自由的境界' };
+  } else if (score >= 80) {
+    return { level: '人间清醒', description: '你看透了世界的荒诞，但依然选择温柔地活着' };
+  } else if (score >= 70) {
+    return { level: '正常人类', description: '你和大多数人一样，在崩溃和自愈之间反复横跳' };
+  } else if (score >= 60) {
+    return { level: '轻微内耗', description: '你有一些精神内耗，但还能维持基本功能' };
+  } else if (score >= 50) {
+    return { level: '中度内耗', description: '你的精神状态有点糟，需要关注一下' };
+  } else if (score >= 40) {
+    return { level: '重度内耗', description: '你已经在崩溃的边缘，建议寻求帮助' };
+  } else if (score >= 30) {
+    return { level: '精神濒危', description: '你的精神状态需要紧急干预' };
+  } else {
+    return { level: '已死但还在呼吸', description: '你的精神已经死亡，但肉体还在打卡' };
+  }
 }
 
 // ── Initialize ──────────────────────────────────────────
