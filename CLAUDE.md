@@ -6,11 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Single-file personality quiz web app ("精神状态鉴定中心 — SBTI风格抽象人格测试"). Everything lives in `index.html` — HTML structure, CSS styles, and all JavaScript logic. No build step, no dependencies, no server required.
 
+**当前版本特性：**
+- 40道题目（每维度10题），4-6个选项
+- 20个人格原型（鲁迅黑色幽默风格）
+- 混合评分机制（选项-维度映射 + 语义分类）
+- 深紫色现代感设计风格
+- 多维度评分系统（压力应对、情绪管理、社交模式、决策方式）
+
 ## Visual design
 
-**ALWAYS use the `frontend-design` skill** for any visual/CSS/styling work in this project. This project has an intentionally designed aesthetic (SBTI-style absurd/chaotic internet theme). Generic or AI-default styling will break the intended tone. The `frontend-design` skill understands the design context and produces appropriate visual output.
-
-When making content changes that don't touch CSS/visuals, the skill is not needed. But any change to `<style>`, layout, colors, typography, or the canvas background animation MUST go through `frontend-design`.
+**任何 CSS/视觉/样式改动必须使用 `frontend-design` skill。** 本项目有刻意设计的深紫色现代感风格，通用 AI 默认样式会破坏调性。改动 `<style>` 块、布局、颜色、字体或 canvas 背景动画 → 用 skill。纯内容（题目、文案）改动不需要。
 
 ## How to run
 
@@ -23,19 +28,56 @@ python3 -m http.server 8000
 
 ## Architecture
 
-Four personality dimensions, each a binary axis:
+Four personality dimensions, each a social coping strategy:
 
 | Dimension   | Pole 0 (score < 0)   | Pole 1 (score >= 0)      |
 |-------------|----------------------|--------------------------|
-| LifeForce   | 微死 (Slightly Dead) | 疯了 (Crazy)             |
-| ActionMode  | 卷死 (Grind)         | 开摆 (Lie Flat)          |
-| ValueCore   | 要钱 (Money)         | 开心 (Happy)             |
-| SocialMode  | 已读不回 (Ghost)     | 随地大小演 (Perform)     |
+| stress      | 抗争 (Fight)         | 逃避 (Escape)            |
+| emotion     | 压抑 (Suppress)      | 宣泄 (Vent)              |
+| social      | 疏离 (Isolate)       | 连接 (Connect)           |
+| decision    | 理性 (Rational)      | 感性 (Emotional)         |
 
-- **20 questions** (5 per dimension), each with two absurd SBTI-style choices. Each choice shifts the dimension score by ±1.
-- **Scoring**: Each answer shifts the dimension score by ±1. At the end, a 4-bit key (e.g. `"0101"`) is formed by checking `score >= 0` per dimension, producing one of **16 archetypes**.
-- **Archetypes**: Use absurd English code names with Chinese labels, e.g. "DEAD (死者)", "GOD (摆烂之神)", "NPC (路人甲)". Each archetype has `name`, `subtitle`, `typeCode` (4-letter), `desc` (absurd portrait), `guidance` (sincere life advice), and `insight` (piercing quote).
-- **Question order**: Shuffled randomly each run.
-- **Background**: Canvas-based glitch/noise animation with binary rain (falling 1/0 characters), color-shifted rectangles, scanlines, and subtle static grain — chaotic SBTI aesthetic.
-- **Screens**: Three screens managed by `showScreen(id)` — `intro`, `question`, `result`. Transitions use CSS opacity/transform and the `.active` class.
-- All archetype data is in the `archetypes` object keyed by the 4-bit string. Archetypes use English code names (DEAD, ATM, SHIT, HHHH, GHOST, JOKER, NPC, LMAO, DEMON, BOSS, STAR, CLOWN, BEGGAR, DREAMER, BUDDHA, GOD) paired with self-deprecating Chinese labels.
+- **40 questions** (10 per dimension), shuffled randomly each run. Each question has 4-6 options with hybrid scoring.
+- **Scoring**: 每个选项有 `scoring` 对象，映射到多个维度。结束后计算每个维度的指数（0-100），生成 4-bit key，查表得到对应 archetype。
+- **Archetype 数据**: 每个含 6 个字段：`name`（鲁迅黑色幽默命名）、`subtitle`、`typeCode`（4 字母）、`desc`（灵魂肖像）、`guidance`（人生指引）、`insight`（哲言）。全部存在 `archetypes` 对象中，key 为 4-bit 字符串或特殊key。
+- **Screens**: 三个页面由 `showScreen(id)` 切换 — `intro`、`question`、`result`。过渡动画用 CSS opacity/transform 和 `.active` class。
+- **Background**: Canvas 动画 — 二进制雨（1/0 下落字符）、颜色偏移的 glitch 方块、扫描线、轻微静态噪点（已优化，使用节流函数）。
+
+## Skill usage
+
+改动时按场景使用对应 skill，不要手动做 skill 擅长的事：
+
+| 场景 | 使用 skill | 说明 |
+|------|-----------|------|
+| CSS/样式/视觉/布局/canvas 背景 | `frontend-design` | 赛博故障美学，AI 默认样式会毁调性 |
+| 写完代码后 | `simplify` | 审查改动质量、可维护性，去冗余 |
+| 提交代码 | `commit-commands:commit` 或 `commit-commands:commit-push-pr` | 按规范生成 commit message |
+| 发 PR 前 / 审查改动 | `pr-review-toolkit:review-pr` | 多 agent 综合审查 |
+| 涉及用户输入、数据处理的安全改动 | `security-review` | 防 XSS、注入等 |
+| 学到新的项目约定/踩坑经验后 | `claude-md-management:revise-claude-md` | 把经验写回 CLAUDE.md |
+
+### Skill 使用示例
+
+- **修改按钮样式**：使用 `frontend-design` skill，因为涉及 CSS 变量和动画
+- **添加新题目**：直接编辑 `questions` 数组，不需要 skill
+- **修改评分逻辑**：编辑 `answer()` 和 `showResult()` 函数，完成后用 `simplify` 审查
+- **提交代码前**：用 `commit-commands:commit` 生成规范的 commit message
+
+## Gotchas
+
+- **改 `dimensions` 数组时，必须同步更新 `showResult()` 中的 `allDimLabels` 和 `dimNames`**。两处硬编码了维度标签，不一致会导致结果页显示错误。
+- **评分机制是混合模式**：选项有 `scoring` 对象映射到多个维度，不是简单的二选一。
+- **特殊原型**：有4个特殊原型（key为`special_1`到`special_4`），需要极端分数才能触发。
+- Google Fonts (`Noto Serif SC`) 通过 CSS `@import` 加载，离线环境回退到系统 serif 字体。
+- Canvas 噪点每帧遍历全屏像素（`putImageData`），低性能设备可能卡顿。优化方式：增大 `data.length` 循环步长降低噪点密度。
+
+## 依赖说明
+
+- **Google Fonts**：通过 CSS `@import` 加载 `Noto Serif SC` 字体，离线环境回退到系统 serif 字体
+- **无外部 JavaScript 依赖**：所有逻辑原生实现
+
+## 数据结构
+
+- **questions**: 40道题目，每题包含 `id`, `dimension`, `text`, `options`（4-6个选项，每个有 `text` 和 `scoring`）
+- **archetypes**: 20个人格原型，key为4位二进制字符串或特殊key
+- **scoringConfig**: 评分配置，包含维度范围和综合指数权重
