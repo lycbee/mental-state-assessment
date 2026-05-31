@@ -1254,9 +1254,26 @@ const archetypes = {
   }
 };
 
+// ── Scoring Configuration ──────────────────────────────
+const scoringConfig = {
+  dimensions: {
+    stress: { min: -20, max: 20 },
+    emotion: { min: -20, max: 20 },
+    social: { min: -20, max: 20 },
+    decision: { min: -20, max: 20 }
+  },
+  composite: {
+    socialAdapt: 0.3,
+    mentalHealth: 0.3,
+    emotionalStability: 0.2,
+    socialHealth: 0.1,
+    decisionHealth: 0.1
+  }
+};
+
 // ── State ──────────────────────────────────────────────
 let currentQuestion = 0;
-let scores = [0, 0, 0, 0]; // +1 for pole 1, -1 for pole 0 per question answered
+let scores = { stress: 0, emotion: 0, social: 0, decision: 0 };
 let answers = [];
 
 function shuffle(arr) {
@@ -1278,7 +1295,7 @@ function showScreen(id) {
 
 function startQuiz() {
   currentQuestion = 0;
-  scores = [0, 0, 0, 0];
+  scores = { stress: 0, emotion: 0, social: 0, decision: 0 };
   answers = [];
   questionOrder = shuffle([...Array(questions.length).keys()]);
   showScreen('question');
@@ -1301,20 +1318,17 @@ function renderQuestion() {
   const choicesEl = document.getElementById('choices');
   choicesEl.innerHTML = '';
 
-  [q.a, q.b].forEach((choice, idx) => {
+  q.options.forEach((choice, idx) => {
     const btn = document.createElement('button');
     btn.className = 'choice';
-    btn.innerHTML = `<span class="letter">选项 ${idx === 0 ? 'A' : 'B'}</span>${choice}`;
+    btn.innerHTML = `<span class="letter">选项 ${String.fromCharCode(65 + idx)}</span>${choice.text}`;
     btn.addEventListener('click', () => answer(qi, idx));
     choicesEl.appendChild(btn);
   });
 }
 
-function answer(questionIndex, choice) {
-  const q = questions[questionIndex];
-  // choice 0 = pole 0, choice 1 = pole 1
-  scores[q.dim] += choice === 0 ? -1 : 1;
-  answers.push({ question: questionIndex, choice });
+function answer(questionIndex, optionIndex) {
+  answers.push({ questionId: questionIndex, optionIndex });
 
   currentQuestion++;
   if (currentQuestion >= questions.length) {
@@ -1332,10 +1346,92 @@ function answer(questionIndex, choice) {
   }
 }
 
+// ── Scoring Functions ──────────────────────────────────
+function calculateScores() {
+  const scores = {
+    stress: 0,
+    emotion: 0,
+    social: 0,
+    decision: 0
+  };
+
+  answers.forEach(answer => {
+    const question = questions[answer.questionId];
+    const option = question.options[answer.optionIndex];
+
+    if (option.scoring) {
+      Object.keys(option.scoring).forEach(dimension => {
+        if (scores[dimension] !== undefined) {
+          scores[dimension] += option.scoring[dimension];
+        }
+      });
+    }
+  });
+
+  return scores;
+}
+
+function calculateDimensionIndex(score, dimension) {
+  const config = scoringConfig.dimensions[dimension];
+  return Math.round(((score - config.min) / (config.max - config.min)) * 100);
+}
+
+function calculateCompositeScores(dimensionIndices) {
+  const socialAdapt = Math.round(
+    (dimensionIndices.stress * 0.3) +
+    (dimensionIndices.emotion * 0.3) +
+    (dimensionIndices.social * 0.2) +
+    (dimensionIndices.decision * 0.2)
+  );
+
+  const mentalHealth = Math.round(
+    (dimensionIndices.emotion * 0.4) +
+    (dimensionIndices.stress * 0.3) +
+    (dimensionIndices.social * 0.3)
+  );
+
+  const emotionalStability = Math.round(
+    (100 - Math.abs(dimensionIndices.emotion - 50)) * 0.5 +
+    (100 - Math.abs(dimensionIndices.stress - 50)) * 0.5
+  );
+
+  const socialHealth = Math.round(
+    (dimensionIndices.social * 0.6) +
+    (dimensionIndices.emotion * 0.4)
+  );
+
+  const decisionHealth = Math.round(
+    (dimensionIndices.decision * 0.6) +
+    (dimensionIndices.stress * 0.4)
+  );
+
+  return {
+    socialAdapt,
+    mentalHealth,
+    emotionalStability,
+    socialHealth,
+    decisionHealth
+  };
+}
+
+function calculateOverallScore(compositeScores) {
+  return Math.round(
+    (compositeScores.socialAdapt * scoringConfig.composite.socialAdapt) +
+    (compositeScores.mentalHealth * scoringConfig.composite.mentalHealth) +
+    (compositeScores.emotionalStability * scoringConfig.composite.emotionalStability) +
+    (compositeScores.socialHealth * scoringConfig.composite.socialHealth) +
+    (compositeScores.decisionHealth * scoringConfig.composite.decisionHealth)
+  );
+}
+
 // ── Results ────────────────────────────────────────────
 function showResult() {
+  // Calculate scores from answers
+  const calculatedScores = calculateScores();
+
   // Build type key: for each dimension, 0 if score < 0, 1 if score >= 0
-  const key = scores.map(s => s >= 0 ? '1' : '0').join('');
+  const dimOrder = ['stress', 'emotion', 'social', 'decision'];
+  const key = dimOrder.map(d => calculatedScores[d] >= 0 ? '1' : '0').join('');
   const archetype = archetypes[key];
 
   document.getElementById('result-type').textContent = archetype.typeCode;
@@ -1343,25 +1439,21 @@ function showResult() {
   document.getElementById('result-subtitle').textContent = archetype.subtitle;
 
   // Dimension tags
-  const dimNames = [
-    scores[0] >= 0 ? '逃避' : '抗争',
-    scores[1] >= 0 ? '宣泄' : '压抑',
-    scores[2] >= 0 ? '连接' : '疏离',
-    scores[3] >= 0 ? '感性' : '理性'
-  ];
-  const allDimLabels = [
-    ['抗争', '逃避'],
-    ['压抑', '宣泄'],
-    ['疏离', '连接'],
-    ['理性', '感性']
-  ];
+  const allDimLabels = {
+    stress: ['抗争', '逃避'],
+    emotion: ['压抑', '宣泄'],
+    social: ['疏离', '连接'],
+    decision: ['理性', '感性']
+  };
   let dimsHTML = '';
-  for (let i = 0; i < 4; i++) {
+  dimOrder.forEach(d => {
+    const score = calculatedScores[d];
+    const labels = allDimLabels[d];
     for (let j = 0; j < 2; j++) {
-      const isActive = (scores[i] >= 0 && j === 1) || (scores[i] < 0 && j === 0);
-      dimsHTML += `<span class="dim-tag${isActive ? ' active' : ''}">${allDimLabels[i][j]}</span>`;
+      const isActive = (score >= 0 && j === 1) || (score < 0 && j === 0);
+      dimsHTML += `<span class="dim-tag${isActive ? ' active' : ''}">${labels[j]}</span>`;
     }
-  }
+  });
   document.getElementById('result-dimensions').innerHTML = dimsHTML;
 
   // Result card
