@@ -557,13 +557,12 @@
 </div>
 
 <script>
-// ── Background Canvas — Glitch Noise ───────────────────
+// ── Background Canvas — Ink Rain ──────────────────────
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 let w, h;
-const glitchBlocks = [];
-const binaryRain = [];
-const colors = ['rgba(255,20,147,', 'rgba(57,255,20,', 'rgba(0,229,255,', 'rgba(255,225,0,'];
+const inkDrops = [];
+const inkChars = '人生在世孤独沉默呐喊彷徨抗争逃避压抑宣泄疏离连接铁屋〇墨';
 
 function resize() {
   w = canvas.width = window.innerWidth;
@@ -572,87 +571,31 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
-// Glitch rectangles that occasionally flash across screen
-for (let i = 0; i < 12; i++) {
-  glitchBlocks.push({
+// 墨色落字/落点
+for (let i = 0; i < 36; i++) {
+  inkDrops.push({
     x: Math.random() * w,
     y: Math.random() * h,
-    w: Math.random() * 60 + 10,
-    h: Math.random() * 4 + 1,
-    opacity: 0,
-    targetOpacity: 0,
-    color: colors[Math.floor(Math.random() * colors.length)],
-    delay: Math.random() * 300,
-    timer: Math.random() * 300
+    char: Math.random() > 0.45 ? inkChars[Math.floor(Math.random() * inkChars.length)] : '·',
+    speed: Math.random() * 0.35 + 0.08,
+    opacity: Math.random() * 0.10 + 0.03,
+    size: Math.random() * 14 + 10,
+    drift: (Math.random() - 0.5) * 0.15
   });
 }
 
-// Binary-like falling characters
-for (let i = 0; i < 30; i++) {
-  binaryRain.push({
-    x: Math.random() * w,
-    y: Math.random() * h,
-    char: Math.random() > 0.5 ? '1' : '0',
-    speed: Math.random() * 0.4 + 0.1,
-    opacity: Math.random() * 0.15 + 0.03,
-    size: Math.random() * 10 + 8,
-    color: Math.random() > 0.7 ? 'rgba(57,255,20,' : 'rgba(255,20,147,'
-  });
-}
-
-function drawGlitchBlock(block) {
-  block.timer++;
-  if (block.timer > block.delay) {
-    block.timer = 0;
-    block.delay = Math.random() * 400 + 200;
-    block.targetOpacity = Math.random() > 0.7 ? Math.random() * 0.3 + 0.1 : 0;
-    block.x = Math.random() * w;
-    block.y = Math.random() * h;
-    block.w = Math.random() * 120 + 20;
+function drawInkDrop(d) {
+  d.y += d.speed;
+  d.x += d.drift;
+  if (d.y > h + 24) {
+    d.y = -24;
+    d.x = Math.random() * w;
+    d.char = Math.random() > 0.45 ? inkChars[Math.floor(Math.random() * inkChars.length)] : '·';
+    d.opacity = Math.random() * 0.10 + 0.03;
   }
-  block.opacity += (block.targetOpacity - block.opacity) * 0.1;
-  if (block.opacity < 0.005) return;
-
-  ctx.fillStyle = block.color + (block.opacity * 0.4) + ')';
-  ctx.fillRect(block.x, block.y, block.w, block.h);
-  // shadow copy shifted
-  ctx.fillStyle = block.color + (block.opacity * 0.15) + ')';
-  ctx.fillRect(block.x + 4, block.y + 1, block.w, block.h);
-  ctx.fillRect(block.x - 4, block.y - 2, block.w, block.h);
-}
-
-function drawBinaryRain(drop) {
-  drop.y += drop.speed;
-  if (drop.y > h + 20) {
-    drop.y = -20;
-    drop.x = Math.random() * w;
-    drop.char = Math.random() > 0.5 ? '1' : '0';
-    drop.opacity = Math.random() * 0.12 + 0.02;
-  }
-  ctx.font = `${drop.size}px "Courier New", monospace`;
-  ctx.fillStyle = drop.color + drop.opacity + ')';
-  ctx.fillText(drop.char, drop.x, drop.y);
-}
-
-function drawNoise() {
-  // subtle full-screen noise — only on ~5% of pixels for perf
-  const imageData = ctx.createImageData(w, h);
-  const data = imageData.data;
-  for (let i = 0; i < data.length; i += 160) {
-    const v = Math.random() > 0.995 ? Math.random() * 20 : 0;
-    data[i] = v;
-    data[i + 1] = v * 0.6;
-    data[i + 2] = v * 0.3;
-    data[i + 3] = Math.random() * 15;
-  }
-  ctx.putImageData(imageData, 0, 0);
-}
-
-function drawScanLines() {
-  ctx.fillStyle = 'rgba(0,0,0,0.015)';
-  for (let y = 0; y < h; y += 4) {
-    ctx.fillRect(0, y, w, 1);
-  }
+  ctx.font = `${d.size}px "Noto Serif SC", serif`;
+  ctx.fillStyle = `rgba(31,24,16,${d.opacity})`;
+  ctx.fillText(d.char, d.x, d.y);
 }
 
 // 性能优化：节流函数
@@ -672,12 +615,9 @@ function throttle(func, limit) {
 // 优化canvas动画
 const animate = throttle(function() {
   ctx.clearRect(0, 0, w, h);
-  binaryRain.forEach(d => drawBinaryRain(d));
-  glitchBlocks.forEach(b => drawGlitchBlock(b));
-  drawNoise();
-  drawScanLines();
+  inkDrops.forEach(d => drawInkDrop(d));
   requestAnimationFrame(animate);
-}, 16); // 60fps
+}, 33); // ~30fps，纸面慢节奏，省性能
 animate();
 
 // ── Data ───────────────────────────────────────────────
