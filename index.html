@@ -587,7 +587,7 @@ for (let i = 0; i < 36; i++) {
 function drawInkDrop(d) {
   d.y += d.speed;
   d.x += d.drift;
-  if (d.y > h + 24) {
+  if (d.y > h + 24 || d.x < -30 || d.x > w + 30) {
     d.y = -24;
     d.x = Math.random() * w;
     d.char = Math.random() > 0.45 ? inkChars[Math.floor(Math.random() * inkChars.length)] : '·';
