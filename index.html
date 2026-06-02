@@ -151,29 +151,24 @@
   }
   .progress-bar {
     width: 100%;
-    height: 3px;
-    background: rgba(255,255,255,0.06);
+    height: 6px;
+    background: #cdbf9e;
+    border: 1px solid var(--hair);
     position: relative;
     overflow: hidden;
   }
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, var(--pink), var(--green), var(--blue));
-    background-size: 200% 100%;
-    animation: progressPulse 1s linear infinite;
+    background: var(--vermilion);
     transition: width 0.4s ease;
-  }
-  @keyframes progressPulse {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
   }
   .progress-num {
     text-align: right;
-    font-family: "Courier New", monospace;
-    font-size: 0.7rem;
-    color: var(--text-dim);
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.78rem;
+    color: var(--sepia);
     margin-top: 0.5rem;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.12em;
   }
 
   /* --- Question --- */
@@ -181,29 +176,20 @@
     transition: opacity 0.25s ease, transform 0.25s ease;
   }
   .question-text {
-    font-family: "Courier New", monospace;
+    font-family: "Noto Serif SC", serif;
     font-size: 1.15rem;
-    font-weight: 400;
-    line-height: 2;
-    text-align: center;
-    margin-bottom: 2.5rem;
-    min-height: 4em;
-    display: flex;
-    align-items: center;
+    font-weight: 700;
+    line-height: 1.8;
+    text-align: left;
+    margin-bottom: 2rem;
+    min-height: 3em;
+    color: #160f08;
     position: relative;
   }
   .question-text::before {
-    content: '>>>';
-    position: absolute;
-    left: -2rem;
-    color: var(--green);
-    opacity: 0.5;
-    font-size: 0.8rem;
-    animation: cursorBlink 0.8s step-end infinite;
-  }
-  @keyframes cursorBlink {
-    0%, 100% { opacity: 0; }
-    50% { opacity: 1; }
+    content: "問　";
+    color: var(--vermilion);
+    font-weight: 900;
   }
 
   .choices {
@@ -214,43 +200,33 @@
   }
 
   .choice {
-    background: var(--surface);
-    border: 2px solid rgba(124,58,237,0.2);
-    padding: 1.25rem 1.5rem;
+    background: rgba(255,252,244,0.4);
+    border: 1px solid var(--hair);
+    padding: 0.95rem 1.2rem;
     cursor: pointer;
     transition: all 0.15s ease;
     text-align: left;
     font-family: "Noto Serif SC", serif;
     font-size: 0.9rem;
-    color: var(--text);
-    letter-spacing: 0.03em;
+    color: var(--ink);
+    letter-spacing: 0.02em;
     line-height: 1.7;
     position: relative;
-    border-radius: 2px 12px 2px 12px;
+    border-radius: 2px;
   }
   .choice:hover {
-    border-color: var(--purple);
-    background: rgba(124,58,237,0.1);
+    border-color: var(--vermilion);
+    background: #fffdf7;
     transform: translateX(4px);
-    box-shadow: -4px 0 0 rgba(124,58,237,0.3);
   }
-  .choice:active {
-    transform: scale(0.97);
-  }
+  .choice:active { transform: scale(0.98); }
   .choice .letter {
     display: inline-block;
-    font-family: "Courier New", monospace;
-    font-size: 0.65rem;
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.85rem;
     font-weight: 700;
-    color: var(--pink-dim);
-    letter-spacing: 0.2em;
+    color: var(--vermilion);
     margin-right: 0.5rem;
-    padding: 2px 6px;
-    border: 1px solid rgba(124,58,237,0.3);
-  }
-  .choice:nth-child(2) .letter {
-    color: var(--green-dim);
-    border-color: rgba(59,130,246,0.3);
   }
 
   /* --- Results --- */
@@ -1331,7 +1307,7 @@ function renderQuestion() {
 
   const progress = ((currentQuestion / questions.length) * 100).toFixed(1);
   document.getElementById('progress-fill').style.width = progress + '%';
-  document.getElementById('progress-num').textContent = (currentQuestion + 1) + ' / ' + questions.length;
+  document.getElementById('progress-num').textContent = '第 ' + (currentQuestion + 1) + ' 問 / 共 ' + questions.length + ' 問';
   document.getElementById('question-text').textContent = q.text;
 
   const choicesEl = document.getElementById('choices');
@@ -1340,7 +1316,7 @@ function renderQuestion() {
   q.options.forEach((choice, idx) => {
     const btn = document.createElement('button');
     btn.className = 'choice';
-    btn.innerHTML = `<span class="letter">选项 ${String.fromCharCode(65 + idx)}</span>${choice.text}`;
+    btn.innerHTML = `<span class="letter">〇</span>${choice.text}`;
     btn.addEventListener('click', () => answer(qi, idx));
     choicesEl.appendChild(btn);
   });
