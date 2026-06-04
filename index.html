@@ -1812,6 +1812,13 @@ if (shareKey && archetypes[shareKey]) {
 } else {
   renderIntro();
 }
+
+// ── Service Worker 注册 ──────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>
