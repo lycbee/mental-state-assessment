@@ -1228,6 +1228,18 @@ function shuffle(arr) {
 
 let questionOrder = [];
 
+// ── URL 参数处理 ─────────────────────────────
+function getUrlParam(key) {
+  const params = new URLSearchParams(window.location.search);
+  return params.get(key);
+}
+
+function setUrlParam(key, value) {
+  const url = new URL(window.location);
+  url.searchParams.set(key, value);
+  history.replaceState(null, '', url);
+}
+
 // ── Navigation ─────────────────────────────────────────
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1422,6 +1434,9 @@ function showResult() {
 
   // 渲染结果页面
   renderResultPage(dimensionIndices, compositeScores, overallScore, archetype);
+
+  // 更新 URL 参数，便于分享
+  setUrlParam('r', archetypeKey);
 }
 
 function getArchetypeKey(scores) {
@@ -1575,8 +1590,20 @@ function getScoreLevel(score) {
   }
 }
 
-// ── Initialize ──────────────────────────────────────────
-renderIntro();
+// ── 初始化 ──────────────────────────────────────
+const shareKey = getUrlParam('r');
+if (shareKey && archetypes[shareKey]) {
+  // 直接展示分享的结果，跳过答题
+  const archetype = archetypes[shareKey];
+  renderResultPage(
+    { stress: 50, emotion: 50, social: 50, decision: 50 },
+    { socialAdapt: 50, mentalHealth: 50, emotionalStability: 50, socialHealth: 50, decisionHealth: 50 },
+    50,
+    archetype
+  );
+} else {
+  renderIntro();
+}
 </script>
 </body>
 </html>
