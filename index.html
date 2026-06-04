@@ -1662,15 +1662,7 @@ function generateShareImage() {
   sctx.lineTo(sw - 50, 46);
   sctx.stroke();
 
-  // 双线下框
-  sctx.beginPath();
-  sctx.moveTo(50, sh - 40);
-  sctx.lineTo(sw - 50, sh - 40);
-  sctx.stroke();
-  sctx.beginPath();
-  sctx.moveTo(50, sh - 46);
-  sctx.lineTo(sw - 50, sh - 46);
-  sctx.stroke();
+  // 双线下框（位置在 onload 中动态绘制）
 
   // 标题
   sctx.fillStyle = '#1f1810';
@@ -1738,12 +1730,12 @@ function generateShareImage() {
     sctx.fillText(line, 80, insightY + 35 + i * 28);
   });
 
-  // 底部分隔线
-  const bottomSepY = sh - 200;
+  // 底部分隔线 — 在二维码区域上方
+  const qrAreaTop = insightY + 35 + insightLines.length * 28 + 30;
   sctx.strokeStyle = '#b3a684';
   sctx.beginPath();
-  sctx.moveTo(200, bottomSepY);
-  sctx.lineTo(sw - 200, bottomSepY);
+  sctx.moveTo(200, qrAreaTop);
+  sctx.lineTo(sw - 200, qrAreaTop);
   sctx.stroke();
 
   // 二维码（使用 API 生成）
@@ -1753,33 +1745,58 @@ function generateShareImage() {
   qrImg.onload = function() {
     const qrSize = 120;
     const qrX = sw / 2 - qrSize / 2;
-    const qrY = bottomSepY + 20;
+    const qrY = qrAreaTop + 25;
+
+    // 二维码背景（纸色，覆盖白色底色）
+    sctx.fillStyle = '#e9e2d0';
+    sctx.fillRect(qrX - 8, qrY - 8, qrSize + 16, qrSize + 16);
     sctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
 
     // 网址文字
     sctx.fillStyle = '#4a3f30';
     sctx.font = '16px "Noto Serif SC", serif';
     sctx.textAlign = 'center';
-    sctx.fillText('扫码测测你是什么品种的精神状态', sw / 2, qrY + qrSize + 25);
+    sctx.fillText('扫码测测你是什么品种的精神状态', sw / 2, qrY + qrSize + 28);
+
+    // 裁剪 canvas 到实际内容高度（去掉底部空白）
+    const contentBottom = qrY + qrSize + 60;
+    const finalH = Math.min(contentBottom + 30, sh);
+    const cropped = document.createElement('canvas');
+    cropped.width = sw;
+    cropped.height = finalH;
+    cropped.getContext('2d').drawImage(shareCanvas, 0, 0, sw, finalH, 0, 0, sw, finalH);
+
+    // 在裁剪后的 canvas 上画底部双线框和印章
+    const cctx = cropped.getContext('2d');
+    cctx.strokeStyle = '#1f1810';
+    cctx.lineWidth = 2;
+    cctx.beginPath();
+    cctx.moveTo(50, finalH - 40);
+    cctx.lineTo(sw - 50, finalH - 40);
+    cctx.stroke();
+    cctx.beginPath();
+    cctx.moveTo(50, finalH - 46);
+    cctx.lineTo(sw - 50, finalH - 46);
+    cctx.stroke();
 
     // 右下角印章
-    sctx.save();
-    sctx.translate(sw - 110, sh - 110);
-    sctx.rotate(7 * Math.PI / 180);
-    sctx.strokeStyle = '#a8321f';
-    sctx.lineWidth = 2.5;
-    sctx.strokeRect(-28, -28, 56, 56);
-    sctx.fillStyle = '#a8321f';
-    sctx.font = 'bold 22px serif';
-    sctx.textAlign = 'center';
-    sctx.textBaseline = 'middle';
-    sctx.fillText('鑒定', 0, 0);
-    sctx.restore();
+    cctx.save();
+    cctx.translate(sw - 110, finalH - 80);
+    cctx.rotate(7 * Math.PI / 180);
+    cctx.strokeStyle = '#a8321f';
+    cctx.lineWidth = 2.5;
+    cctx.strokeRect(-28, -28, 56, 56);
+    cctx.fillStyle = '#a8321f';
+    cctx.font = 'bold 22px serif';
+    cctx.textAlign = 'center';
+    cctx.textBaseline = 'middle';
+    cctx.fillText('鑒定', 0, 0);
+    cctx.restore();
 
     // 下载
     const link = document.createElement('a');
     link.download = `精神鉴定-${name}.png`;
-    link.href = shareCanvas.toDataURL('image/png');
+    link.href = cropped.toDataURL('image/png');
     link.click();
     showToast('图片已保存');
   };
