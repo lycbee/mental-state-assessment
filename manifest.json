@@ -1,0 +1,22 @@
+{
+  "name": "精神状态鉴定中心",
+  "short_name": "精神鉴定",
+  "description": "40道题测出你的人格原型，鲁迅式黑色幽默的灵魂鉴定",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#e9e2d0",
+  "theme_color": "#a8321f",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
