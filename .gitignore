@@ -1,2 +1,5 @@
 # Brainstorm visual companion cache
 .superpowers/
+
+# Node.js
+node_modules/
