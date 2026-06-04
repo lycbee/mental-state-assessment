@@ -26,6 +26,19 @@ python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
+## GitHub Pages 部署
+
+本项目通过 GitHub Pages 自动部署。推送到 `master` 分支会触发自动构建。
+
+```bash
+# 部署流程
+git push origin master  # 自动触发 Pages 重建
+```
+
+- **线上地址**: https://lycbee.github.io/mental-state-assessment/
+- **Pages 配置**: master 分支根目录，无 Actions workflow
+- **构建状态**: 通过 GitHub API 查询 `GET /repos/{owner}/{repo}/pages`
+
 ## Architecture
 
 Four personality dimensions, each a social coping strategy:
