@@ -325,6 +325,65 @@
     transform: translate(1px, 1px);
   }
 
+  /* --- Share --- */
+  .share-section {
+    width: 100%;
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px dashed var(--hair);
+  }
+
+  .share-title {
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.82rem;
+    color: var(--sepia);
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+  }
+
+  .share-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-share {
+    background: transparent;
+    border: 1.5px solid var(--vermilion);
+    color: var(--vermilion);
+    padding: 0.55rem 1.5rem;
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-radius: 2px;
+    box-shadow: 2px 2px 0 var(--vermilion-dim);
+  }
+
+  .btn-share:hover {
+    background: var(--vermilion);
+    color: #f5ecd8;
+    box-shadow: 1px 1px 0 var(--vermilion-dim);
+    transform: translate(1px, 1px);
+  }
+
+  .share-toast {
+    font-size: 0.78rem;
+    color: var(--sepia);
+    margin-top: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    letter-spacing: 0.1em;
+  }
+
+  .share-toast.show {
+    opacity: 1;
+  }
+
   /* 进度条容器 */
   .progress-bar-container { width: 100%; margin: 1rem 0; }
 
@@ -457,6 +516,11 @@
 
     .score-number {
       font-size: 3rem;
+    }
+
+    .btn-share {
+      padding: 0.5rem 1.2rem;
+      font-size: 0.78rem;
     }
   }
 </style>
@@ -1504,10 +1568,154 @@ function renderResultPage(dimensionIndices, compositeScores, overallScore, arche
     </div>
 
     <button class="btn btn-restart" onclick="restartQuiz()">重新测试</button>
+
+    <div class="share-section">
+      <div class="share-title">─── 分享你的结果 ───</div>
+      <div class="share-buttons">
+        <button class="btn-share" onclick="copyShareLink()">复制链接</button>
+        <button class="btn-share" onclick="generateShareImage()">保存图片</button>
+      </div>
+      <div class="share-toast" id="share-toast"></div>
+    </div>
   `;
 
   document.getElementById('screen-result').innerHTML = resultHTML;
   showScreen('result');
+}
+
+function copyShareLink() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('链接已复制，快去分享吧');
+  }).catch(() => {
+    const input = document.createElement('input');
+    input.value = url;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    document.body.removeChild(input);
+    showToast('链接已复制，快去分享吧');
+  });
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('share-toast');
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+function generateShareImage() {
+  const shareCanvas = document.createElement('canvas');
+  const sw = 800, sh = 1000;
+  shareCanvas.width = sw;
+  shareCanvas.height = sh;
+  const sctx = shareCanvas.getContext('2d');
+
+  const nameEl = document.querySelector('.result-name');
+  const typeEl = document.querySelector('.result-type');
+  const subtitleEl = document.querySelector('.result-subtitle');
+  const name = nameEl ? nameEl.textContent : '未知';
+  const typeCode = typeEl ? typeEl.textContent : '';
+  const subtitle = subtitleEl ? subtitleEl.textContent : '';
+
+  // 背景
+  sctx.fillStyle = '#e9e2d0';
+  sctx.fillRect(0, 0, sw, sh);
+
+  // 纸纹噪点
+  for (let i = 0; i < 5000; i++) {
+    const x = Math.random() * sw;
+    const y = Math.random() * sh;
+    sctx.fillStyle = `rgba(120,90,40,${Math.random() * 0.04})`;
+    sctx.fillRect(x, y, 1, 1);
+  }
+
+  // 双线上框
+  sctx.strokeStyle = '#1f1810';
+  sctx.lineWidth = 2;
+  sctx.beginPath();
+  sctx.moveTo(50, 40);
+  sctx.lineTo(sw - 50, 40);
+  sctx.stroke();
+  sctx.beginPath();
+  sctx.moveTo(50, 46);
+  sctx.lineTo(sw - 50, 46);
+  sctx.stroke();
+
+  // 双线下框
+  sctx.beginPath();
+  sctx.moveTo(50, sh - 40);
+  sctx.lineTo(sw - 50, sh - 40);
+  sctx.stroke();
+  sctx.beginPath();
+  sctx.moveTo(50, sh - 46);
+  sctx.lineTo(sw - 50, sh - 46);
+  sctx.stroke();
+
+  // 标题
+  sctx.fillStyle = '#1f1810';
+  sctx.font = 'bold 36px "Noto Serif SC", serif';
+  sctx.textAlign = 'center';
+  sctx.fillText('精神状态鉴定中心', sw / 2, 100);
+
+  // 分隔线
+  sctx.strokeStyle = '#b3a684';
+  sctx.lineWidth = 1;
+  sctx.beginPath();
+  sctx.moveTo(200, 130);
+  sctx.lineTo(sw - 200, 130);
+  sctx.stroke();
+
+  // 类型码
+  sctx.fillStyle = '#a8321f';
+  sctx.font = '24px "Noto Serif SC", serif';
+  sctx.fillText(typeCode, sw / 2, 200);
+
+  // 人格名称（大字）
+  sctx.fillStyle = '#1f1810';
+  sctx.font = 'bold 64px "Noto Serif SC", serif';
+  sctx.fillText(name, sw / 2, 300);
+
+  // 副标题
+  sctx.fillStyle = '#4a3f30';
+  sctx.font = '28px "Noto Serif SC", serif';
+  sctx.fillText(subtitle, sw / 2, 370);
+
+  // 分隔线
+  sctx.strokeStyle = '#b3a684';
+  sctx.beginPath();
+  sctx.moveTo(200, 420);
+  sctx.lineTo(sw - 200, 420);
+  sctx.stroke();
+
+  // 说明文字
+  sctx.fillStyle = '#4a3f30';
+  sctx.font = '22px "Noto Serif SC", serif';
+  sctx.fillText('长按识别二维码，测测你是什么品种的精神状态', sw / 2, sh - 120);
+
+  // 右下角印章
+  sctx.save();
+  sctx.translate(sw - 110, sh - 110);
+  sctx.rotate(7 * Math.PI / 180);
+  sctx.strokeStyle = '#a8321f';
+  sctx.lineWidth = 2.5;
+  sctx.strokeRect(-28, -28, 56, 56);
+  sctx.fillStyle = '#a8321f';
+  sctx.font = 'bold 22px serif';
+  sctx.textAlign = 'center';
+  sctx.textBaseline = 'middle';
+  sctx.fillText('鑒定', 0, 0);
+  sctx.restore();
+
+  // 下载
+  const link = document.createElement('a');
+  link.download = `精神鉴定-${name}.png`;
+  link.href = shareCanvas.toDataURL('image/png');
+  link.click();
+
+  showToast('图片已保存');
 }
 
 function renderDimensionBars(dimensionIndices) {
