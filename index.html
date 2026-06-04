@@ -1739,7 +1739,8 @@ function generateShareImage() {
   sctx.stroke();
 
   // 二维码（使用 API 生成）
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(window.location.href)}`;
+  const baseUrl = window.location.origin + window.location.pathname;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(baseUrl)}`;
   const qrImg = new Image();
   qrImg.crossOrigin = 'anonymous';
   qrImg.onload = function() {
