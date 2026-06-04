@@ -62,6 +62,7 @@ Four personality dimensions, each a social coping strategy:
 - **分享**: 结果页有「复制链接」和「保存图片」按钮。URL 参数 `?r=xxxx` 可直接展示对应人格原型。
 - **PWA**: `manifest.json` + `sw.js` 提供离线支持。Service Worker 使用 Network First 策略缓存同源资源，Stale While Revalidate 策略缓存 Google Fonts。
 - **OG Image**: `generate-og.js` 脚本生成 `og-image.png`（1200×630）和 PWA 图标。修改后需重新运行 `node generate-og.js`。
+- **分享图片**: `generateShareImage()` 用 Canvas 绘制结果卡片（灵魂肖像摘要 + 哲思），通过 `api.qrserver.com` API 生成二维码。Canvas 动态裁剪避免底部空白。`wrapText()` 辅助函数处理中文自动换行。二维码链接到测试开始页。
 
 ## Skill usage
 
@@ -85,7 +86,6 @@ Four personality dimensions, each a social coping strategy:
 
 ## Gotchas
 
-- **改 `dimensions` 数组时，必须同步更新 `showResult()` 中的 `allDimLabels` 和 `dimNames`**。两处硬编码了维度标签，不一致会导致结果页显示错误。
 - **评分机制是混合模式**：选项有 `scoring` 对象映射到多个维度，不是简单的二选一。
 - **特殊原型**：有4个特殊原型（key为`special_1`到`special_4`），需要极端分数才能触发。
 - Google Fonts (`Noto Serif SC`) 通过 CSS `@import` 加载，离线环境回退到系统 serif 字体。
@@ -95,6 +95,7 @@ Four personality dimensions, each a social coping strategy:
 
 - **Google Fonts**：通过 CSS `@import` 加载 `Noto Serif SC` 字体，离线环境回退到系统 serif 字体
 - **无外部 JavaScript 依赖**：所有逻辑原生实现
+- **generate-og.js**：依赖 `canvas` npm 包（仅构建时需要，运行时不需要）
 
 ## 数据结构
 
