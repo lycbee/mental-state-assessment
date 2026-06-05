@@ -993,20 +993,8 @@ const scoringConfig = {
 };
 
 // ── State ──────────────────────────────────────────────
-let currentQuestion = 0;
-let scores = { stress: 0, emotion: 0, social: 0, decision: 0 };
-let answers = [];
-
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-let questionOrder = [];
+let currentQuestion = null;
+let questionCount = 0;
 
 // ── URL 参数处理 ─────────────────────────────
 function getUrlParam(key) {
@@ -1046,106 +1034,91 @@ function renderIntro() {
 }
 
 function startQuiz() {
-  currentQuestion = 0;
-  scores = { stress: 0, emotion: 0, social: 0, decision: 0 };
-  answers = [];
-  questionOrder = shuffle([...Array(questions.length).keys()]);
+  adaptiveState = {
+    phase: 'explore',
+    askedQuestions: [],
+    dimensionAnswers: { stress: [], emotion: [], social: [], decision: [] },
+    subfacetCoverage: { stress: {}, emotion: {}, social: {}, decision: {} },
+    validityAnswers: [],
+    currentDimension: null,
+    questionCount: 0
+  };
+  questionCount = 0;
   showScreen('question');
+  currentQuestion = selectNextQuestion();
   renderQuestion();
 }
 
 function restartQuiz() {
-  // 清除 URL 中的分享参数
   const url = new URL(window.location);
   url.searchParams.delete('r');
   history.replaceState(null, '', url);
-
-  // 重置状态
-  currentQuestion = 0;
-  scores = { stress: 0, emotion: 0, social: 0, decision: 0 };
-  answers = [];
-
-  // 重新生成 intro 页面并切换
   renderIntro();
   showScreen('intro');
 }
 
 // ── Render Question ────────────────────────────────────
 function renderQuestion() {
-  const qi = questionOrder[currentQuestion];
-  const q = questions[qi];
-
-  const progress = ((currentQuestion / questions.length) * 100).toFixed(1);
-  document.getElementById('progress-fill').style.width = progress + '%';
-  document.getElementById('progress-num').textContent = '第 ' + (currentQuestion + 1) + ' 問 / 共 ' + questions.length + ' 問';
+  if (!currentQuestion) return;
+  const q = currentQuestion;
+  document.getElementById('progress-num').textContent = '第 ' + (questionCount + 1) + ' 题';
+  const estimatedProgress = Math.min((questionCount / scoringConfig.maxQuestions) * 100, 95);
+  document.getElementById('progress-fill').style.width = estimatedProgress + '%';
   document.getElementById('question-text').textContent = q.text;
 
   const choicesEl = document.getElementById('choices');
   choicesEl.innerHTML = '';
 
-  q.options.forEach((choice, idx) => {
+  q.optionTexts.forEach((text, idx) => {
     const btn = document.createElement('button');
     btn.className = 'choice';
-    btn.innerHTML = `<span class="letter">〇</span>${choice.text}`;
-    btn.addEventListener('click', () => answer(qi, idx));
+    btn.innerHTML = `<span class="letter">〇</span>${text}`;
+    btn.addEventListener('click', () => answer(idx));
     choicesEl.appendChild(btn);
   });
 }
 
-function answer(questionIndex, optionIndex) {
-  const q = questions[questionIndex];
+function answer(optionIndex) {
+  const q = currentQuestion;
 
-  // 应用选项评分
-  const option = q.options[optionIndex];
-  if (option.scoring) {
-    Object.keys(option.scoring).forEach(dimension => {
-      if (scores[dimension] !== undefined) {
-        scores[dimension] += option.scoring[dimension];
-      }
+  if (q.dimension === 'validity') {
+    adaptiveState.validityAnswers.push({
+      questionId: q.id,
+      expected: q.validityCheck,
+      actual: optionIndex
     });
-  }
-
-  answers.push({ questionId: q.id, optionIndex });
-
-  currentQuestion++;
-  if (currentQuestion >= questions.length) {
-    showResult();
   } else {
-    // 淡出过渡
-    const screen = document.getElementById('screen-question');
-    screen.style.opacity = '0';
-    screen.style.transform = 'translateY(12px)';
-    setTimeout(() => {
-      renderQuestion();
-      screen.style.opacity = '1';
-      screen.style.transform = 'translateY(0)';
-    }, 300);
-  }
-}
-
-// ── Scoring Functions ──────────────────────────────────
-function calculateScores() {
-  const scores = {
-    stress: 0,
-    emotion: 0,
-    social: 0,
-    decision: 0
-  };
-
-  answers.forEach(answer => {
-    const question = questions[answer.questionId - 1];
-    const option = question.options[answer.optionIndex];
-
-    if (option.scoring) {
-      Object.keys(option.scoring).forEach(dimension => {
-        if (scores[dimension] !== undefined) {
-          scores[dimension] += option.scoring[dimension];
-        }
-      });
+    const likertScore = applyPolarity(getLikertScore(optionIndex, q), q);
+    adaptiveState.dimensionAnswers[q.dimension].push(likertScore);
+    if (!adaptiveState.subfacetCoverage[q.dimension]) {
+      adaptiveState.subfacetCoverage[q.dimension] = {};
     }
-  });
+    adaptiveState.subfacetCoverage[q.dimension][q.subfacet] = true;
+  }
 
-  return scores;
+  adaptiveState.askedQuestions.push(q.id);
+  adaptiveState.questionCount++;
+  questionCount++;
+
+  const screen = document.getElementById('screen-question');
+  screen.style.opacity = '0';
+  screen.style.transform = 'translateY(12px)';
+
+  setTimeout(() => {
+    const phase = determinePhase();
+    if (phase === 'done' || (phase === 'validity' && adaptiveState.askedQuestions.filter(id => id.startsWith('validity')).length >= scoringConfig.validityCheckCount)) {
+      showResult();
+      return;
+    }
+    currentQuestion = selectNextQuestion();
+    if (!currentQuestion) {
+      showResult();
+      return;
+    }
+    renderQuestion();
+    screen.style.opacity = '1';
+    screen.style.transform = 'translateY(0)';
+  }, 300);
 }
 
 // ── Likert Scoring Engine ──────────────────────────────
