@@ -1148,10 +1148,64 @@ function calculateScores() {
   return scores;
 }
 
-function calculateDimensionIndex(score, dimension) {
-  const config = scoringConfig.dimensions[dimension];
-  const clampedScore = Math.max(config.min, Math.min(config.max, score));
-  return Math.round(((clampedScore - config.min) / (config.max - config.min)) * 100);
+// ── Likert Scoring Engine ──────────────────────────────
+
+/**
+ * 将选项索引（0-based）转换为Likert分数（1-5），根据选项数量进行映射
+ * @param {number} optionIndex - 0-based选项索引
+ * @param {object} question - 题目对象，包含options（选项数量）
+ * @returns {number} Likert分数（1-5范围）
+ */
+function getLikertScore(optionIndex, question) {
+  const n = question.options;
+  if (n === 5) {
+    return optionIndex + 1;
+  } else if (n === 6) {
+    const mapping = [1, 2, 2.67, 3.33, 4, 5];
+    return mapping[optionIndex];
+  } else if (n === 4) {
+    return (optionIndex) * (4 / 3) + 1;
+  }
+  return optionIndex + 1;
+}
+
+/**
+ * 应用极性反转：若question.polarity === 'reverse'，则反转评分
+ * @param {number} score - Likert分数
+ * @param {object} question - 题目对象，包含polarity字段
+ * @returns {number} 应用极性后的分数
+ */
+function applyPolarity(score, question) {
+  if (question.polarity === 'reverse') {
+    return 6 - score;
+  }
+  return score;
+}
+
+/**
+ * 计算答案列表的标准差，用于衡量置信度
+ * 标准差越小，说明答案越一致，置信度越高
+ * @param {number[]} dimensionAnswers - 某维度的Likert分数数组
+ * @returns {number} 标准差（<2个数据时返回Infinity）
+ */
+function calculateConfidence(dimensionAnswers) {
+  if (dimensionAnswers.length < 2) return Infinity;
+  const mean = dimensionAnswers.reduce((s, v) => s + v, 0) / dimensionAnswers.length;
+  const variance = dimensionAnswers.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / dimensionAnswers.length;
+  return Math.sqrt(variance);
+}
+
+/**
+ * 将答案数组的原始分数标准化到0-100的维度指数
+ * @param {number[]} answers - 某维度的Likert分数数组（每项1-5）
+ * @returns {number} 标准化后的维度指数（0-100）
+ */
+function calculateDimensionIndex(answers) {
+  if (answers.length === 0) return 50;
+  const minPossible = answers.length * 1;
+  const maxPossible = answers.length * 5;
+  const rawScore = answers.reduce((s, v) => s + v, 0);
+  return Math.round(((rawScore - minPossible) / (maxPossible - minPossible)) * 100);
 }
 
 function calculateCompositeScores(dimensionIndices) {
