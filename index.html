@@ -671,6 +671,8 @@ const subfacets = {
 };
 
 const questionPool = [
+  // ===== 压力应对 stress (10题) =====
+  // anxiety: 3题 (1 reverse)
   {
     id: 'stress_01', dimension: 'stress', subfacet: 'anxiety', polarity: 'direct',
     leaning: 'escape', difficulty: 'easy', options: 5,
@@ -679,54 +681,150 @@ const questionPool = [
     scoring: null
   },
   {
-    id: 'stress_02', dimension: 'stress', subfacet: 'resilience', polarity: 'direct',
+    id: 'stress_02', dimension: 'stress', subfacet: 'anxiety', polarity: 'reverse',
+    leaning: 'fight', difficulty: 'boundary', options: 5,
+    text: '你的老板在全体大会上点名批评了你，虽然错不在你。你——',
+    optionTexts: ['当场站起来说"这不是我的问题"','散会后找老板私下说明情况','忍了，但回去写了一封三千字的邮件','什么都不说，开始更新简历','下班后在朋友圈发了一条"呵呵"'],
+    scoring: null
+  },
+  {
+    id: 'stress_03', dimension: 'stress', subfacet: 'anxiety', polarity: 'direct',
+    leaning: 'escape', difficulty: 'extreme', options: 5,
+    text: '深夜两点，你突然想到明天有个重要会议，然后你——',
+    optionTexts: ['翻来覆去到天亮，会议表现反而更好','打开电脑再检查一遍材料','刷手机到凌晨四点，用疲惫麻痹焦虑','起来泡了杯茶，对着天花板发呆','开始搜索"失眠会导致猝死吗"'],
+    scoring: null
+  },
+  // resilience: 3题
+  {
+    id: 'stress_04', dimension: 'stress', subfacet: 'resilience', polarity: 'direct',
     leaning: 'fight', difficulty: 'easy', options: 5,
     text: '你被同事甩锅了，你？',
     optionTexts: ['当面指出问题，要求道歉','私下找同事沟通','算了，不计较','在朋友圈发阴阳怪气的内容','越级汇报'],
     scoring: null
   },
   {
-    id: 'stress_03', dimension: 'stress', subfacet: 'action', polarity: 'direct',
+    id: 'stress_05', dimension: 'stress', subfacet: 'resilience', polarity: 'direct',
     leaning: 'fight', difficulty: 'boundary', options: 5,
-    text: '你的年度目标清单上大概有多少条？',
-    optionTexts: ['四十七条。每一条都有详细的子任务和甘特图','五条左右，大概知道方向就行','年度目标？我一般只设置"本周目标"——活到周五','没有目标。目标是资本主义的陷阱','有目标，但从没完成过'],
+    text: '你被一个根本不认识的人在网上造谣中伤。你——',
+    optionTexts: ['截图保存证据，准备走法律途径','发了一条澄清的长文','无视，清者自清','用小号骂回去','注销账号，换个身份重新做人'],
     scoring: null
   },
   {
-    id: 'stress_04', dimension: 'stress', subfacet: 'avoidance', polarity: 'reverse',
-    leaning: 'escape', difficulty: 'boundary', options: 5,
-    text: '你有一个重要的任务明天要交。现在是晚上十点，你的进度是？',
+    id: 'stress_06', dimension: 'stress', subfacet: 'resilience', polarity: 'direct',
+    leaning: 'fight', difficulty: 'extreme', options: 5,
+    text: '你创业三年的公司倒闭了，欠了一屁股债。亲戚聚会时有人问"现在在做什么"，你——',
+    optionTexts: ['坦然说"公司黄了，正在重新开始"','含糊其辞说"在看机会"','开玩笑说"在体验人生"','当场发火"问这么多干嘛"','根本没去聚会'],
+    scoring: null
+  },
+  // action: 2题
+  {
+    id: 'stress_07', dimension: 'stress', subfacet: 'action', polarity: 'direct',
+    leaning: 'fight', difficulty: 'easy', options: 5,
+    text: '你决定要学一门新技能，从"我要学"到真正打开教程，中间隔了多久？',
+    optionTexts: ['当天就学了','三天以内','一周左右','一个月','三年了还在"计划中"'],
+    scoring: null
+  },
+  {
+    id: 'stress_08', dimension: 'stress', subfacet: 'action', polarity: 'direct',
+    leaning: 'fight', difficulty: 'boundary', options: 5,
+    text: '你的年度目标清单上大概有多少条？',
+    optionTexts: ['四十七条，每条都有甘特图','五条左右，大概知道方向就行','年度目标？我只设"本周目标"——活到周五','没有目标。目标是资本主义的陷阱','有目标，但从没完成过'],
+    scoring: null
+  },
+  // avoidance: 2题 (reverse)
+  {
+    id: 'stress_09', dimension: 'stress', subfacet: 'avoidance', polarity: 'reverse',
+    leaning: 'escape', difficulty: 'easy', options: 5,
+    text: '你有一个重要的任务明天要交，现在是晚上十点，你的进度是？',
     optionTexts: ['已经完成了，还在检查细节','大概完成了百分之八十','还没开始，但列了详细计划','刚开始，准备通宵','完全没动，正在刷手机'],
     scoring: null
   },
   {
+    id: 'stress_10', dimension: 'stress', subfacet: 'avoidance', polarity: 'reverse',
+    leaning: 'escape', difficulty: 'boundary', options: 5,
+    text: '你遇到一个怎么都解决不了的 bug，折腾了两小时。你——',
+    optionTexts: ['继续死磕，直到解决为止','换了个思路重新来','先放一放，去干别的','把电脑合上，假装这个 bug 不存在','开始怀疑自己是不是不适合做这行'],
+    scoring: null
+  },
+
+  // ===== 情绪管理 emotion (10题) =====
+  // awareness: 3题
+  {
     id: 'emotion_01', dimension: 'emotion', subfacet: 'awareness', polarity: 'direct',
     leaning: 'vent', difficulty: 'easy', options: 5,
-    text: '朋友当众开了一个让你很难堪的玩笑。饭桌上所有人都在笑。你——',
+    text: '朋友当众开了一个让你很难堪的玩笑，饭桌上所有人都在笑。你——',
     optionTexts: ['完全不当回事，甚至还接了个梗','假装不在意，回去之后越想越气','当场怼回去，管他是不是朋友','假装没听见，但整晚都没再说话','散场后发了条朋友圈，仅他可见'],
     scoring: null
   },
   {
-    id: 'emotion_02', dimension: 'emotion', subfacet: 'suppression', polarity: 'reverse',
+    id: 'emotion_02', dimension: 'emotion', subfacet: 'awareness', polarity: 'direct',
+    leaning: 'vent', difficulty: 'boundary', options: 5,
+    text: '你躺在床上准备睡觉，突然毫无征兆地开始流泪。你对自己此刻情绪的了解程度是？',
+    optionTexts: ['很清楚，知道是因为什么事','隐约觉得不开心，但说不清具体原因','知道自己在哭，但不知道为什么','以为是眼睛进沙子了','根本没意识到自己在哭，直到枕头湿了'],
+    scoring: null
+  },
+  {
+    id: 'emotion_03', dimension: 'emotion', subfacet: 'awareness', polarity: 'direct',
+    leaning: 'vent', difficulty: 'extreme', options: 5,
+    text: '你发现自己最近总是莫名其妙地对身边人发脾气。你意识到这是因为——',
+    optionTexts: ['工作压力太大，情绪转移了','感情出了问题，自己还没承认','其实就是性格不好，别找借口','没想过为什么，脾气发完就完了','意识到的时候，已经把所有人都得罪了'],
+    scoring: null
+  },
+  // suppression: 3题 (1 reverse)
+  {
+    id: 'emotion_04', dimension: 'emotion', subfacet: 'suppression', polarity: 'reverse',
     leaning: 'suppress', difficulty: 'easy', options: 5,
     text: '你刚和伴侣吵完架，对方摔门进了卧室。客厅只剩你一个人。你——',
-    optionTexts: ['坐在沙发上，把刚才的对话在脑子里过了二十遍','打开电视，试图用别人的故事盖住自己的','走到阳台抽了根烟，感觉好多了','推门进去说"我们谈谈"','开始收拾行李'],
+    optionTexts: ['坐在沙发上，把对话在脑子里过了二十遍','打开电视，试图用别人的故事盖住自己的','走到阳台抽了根烟，感觉好多了','推门进去说"我们谈谈"','开始收拾行李'],
     scoring: null
   },
   {
-    id: 'emotion_03', dimension: 'emotion', subfacet: 'release', polarity: 'direct',
-    leaning: 'vent', difficulty: 'boundary', options: 5,
-    text: '你今天过得很糟糕。回到家关上门后，你——',
-    optionTexts: ['躺在床上，什么都不想做','打开音乐，把音量调到最大','给朋友发了一大段消息吐槽','打开备忘录，写了一篇三千字的日记','点了一份外卖，用食物填补空虚'],
-    scoring: null
-  },
-  {
-    id: 'emotion_04', dimension: 'emotion', subfacet: 'stability', polarity: 'direct',
+    id: 'emotion_05', dimension: 'emotion', subfacet: 'suppression', polarity: 'reverse',
     leaning: 'suppress', difficulty: 'boundary', options: 5,
+    text: '你对某个人积攒了很多不满，终于有一天——',
+    optionTexts: ['找了个机会一次性全部说了出来','写了一封长信但没发出去','找朋友倾诉了一番','算了，忍忍就过去了','直接拉黑，一个字都不想多说'],
+    scoring: null
+  },
+  {
+    id: 'emotion_06', dimension: 'emotion', subfacet: 'suppression', polarity: 'reverse',
+    leaning: 'suppress', difficulty: 'extreme', options: 5,
+    text: '你已经被同一个人伤害了很多次，每次都说"最后一次"。这次你——',
+    optionTexts: ['终于做了断，不再回头','告诉自己这是最后一次，但还是没断','已经麻木了，无所谓了','开始怀疑是不是自己的问题','删了对方所有联系方式，但偷偷用小号看'],
+    scoring: null
+  },
+  // release: 2题
+  {
+    id: 'emotion_07', dimension: 'emotion', subfacet: 'release', polarity: 'direct',
+    leaning: 'vent', difficulty: 'easy', options: 5,
+    text: '工作压力大到快爆炸了，你最可能的发泄方式是？',
+    optionTexts: ['跟朋友疯狂吐槽','打游戏打到手抽筋','去跑步跑到腿软','在厕所里小声骂人','什么都不做，硬扛'],
+    scoring: null
+  },
+  {
+    id: 'emotion_08', dimension: 'emotion', subfacet: 'release', polarity: 'direct',
+    leaning: 'vent', difficulty: 'boundary', options: 5,
+    text: '你受了委屈但找不到人倾诉。你——',
+    optionTexts: ['打开备忘录写了一大段，然后删掉','对着镜子练习了一遍想说的话','去KTV唱了一整晚的苦情歌','在匿名论坛发了一篇帖子','把委屈咽下去，假装什么都没发生'],
+    scoring: null
+  },
+  // stability: 2题 (1 reverse)
+  {
+    id: 'emotion_09', dimension: 'emotion', subfacet: 'stability', polarity: 'direct',
+    leaning: 'suppress', difficulty: 'easy', options: 5,
     text: '你在地铁上被人踩了一脚，对方没道歉。你的内心活动是？',
     optionTexts: ['算了，可能他也不是故意的','有点不爽，但很快就忘了','气死了，但忍住了','一整天都在想这件事','截图发朋友圈，配文"今天遇到一个没素质的人"'],
     scoring: null
   },
+  {
+    id: 'emotion_10', dimension: 'emotion', subfacet: 'stability', polarity: 'reverse',
+    leaning: 'vent', difficulty: 'extreme', options: 5,
+    text: '你正在开会，领导突然当众否决了你准备了一周的方案。你——',
+    optionTexts: ['面无表情，内心毫无波动','脸红了一下，但很快恢复','手在桌子底下攥紧了拳头','当场反驳，声音都在抖','会后在工位上默默哭了十分钟'],
+    scoring: null
+  },
+
+  // ===== 社交模式 social (10题) =====
+  // energy: 3题 (1 reverse)
   {
     id: 'social_01', dimension: 'social', subfacet: 'energy', polarity: 'direct',
     leaning: 'connect', difficulty: 'easy', options: 5,
@@ -735,26 +833,74 @@ const questionPool = [
     scoring: null
   },
   {
-    id: 'social_02', dimension: 'social', subfacet: 'trust', polarity: 'direct',
+    id: 'social_02', dimension: 'social', subfacet: 'energy', polarity: 'reverse',
+    leaning: 'isolate', difficulty: 'boundary', options: 5,
+    text: '连续参加了三天的社交活动后，你——',
+    optionTexts: ['精力充沛，明天还能继续','有点累，但总体还不错','需要一天时间回血','已经把接下来一个月的社交全推了','手机关机，谁找都不理'],
+    scoring: null
+  },
+  {
+    id: 'social_03', dimension: 'social', subfacet: 'energy', polarity: 'direct',
+    leaning: 'connect', difficulty: 'extreme', options: 5,
+    text: '你被邀请参加一个有二十多个陌生人的聚会。你的状态是？',
+    optionTexts: ['兴奋！又可以认识新朋友了','有点紧张，但愿意试试','能不去吗？','到了之后找了个角落待着','根本没去，在家看剧'],
+    scoring: null
+  },
+  // trust: 3题
+  {
+    id: 'social_04', dimension: 'social', subfacet: 'trust', polarity: 'direct',
     leaning: 'connect', difficulty: 'easy', options: 5,
     text: '新来的同事主动找你聊天，你——',
     optionTexts: ['热情回应，午饭就一起去吃了','礼貌回应，但保持距离','觉得他可能有所图','聊了几句就找借口离开了','直接问他"你是不是有什么事？"'],
     scoring: null
   },
   {
-    id: 'social_03', dimension: 'social', subfacet: 'tolerance', polarity: 'reverse',
-    leaning: 'isolate', difficulty: 'boundary', options: 5,
+    id: 'social_05', dimension: 'social', subfacet: 'trust', polarity: 'direct',
+    leaning: 'connect', difficulty: 'boundary', options: 5,
+    text: '一个多年没联系的老朋友突然发消息问你借钱。你——',
+    optionTexts: ['二话不说就转了','问了问原因，然后决定借','委婉拒绝了','已读不回','直接删好友'],
+    scoring: null
+  },
+  {
+    id: 'social_06', dimension: 'social', subfacet: 'trust', polarity: 'direct',
+    leaning: 'connect', difficulty: 'extreme', options: 5,
+    text: '你刚认识的人对你特别热情，主动分享了很多私事。你的第一反应是？',
+    optionTexts: ['感动，也分享了自己的故事','觉得他人不错，但保留一些距离','热情过头了，有点不正常','他是不是想推销什么','已经在想怎么甩开他了'],
+    scoring: null
+  },
+  // tolerance: 2题 (reverse)
+  {
+    id: 'social_07', dimension: 'social', subfacet: 'tolerance', polarity: 'reverse',
+    leaning: 'isolate', difficulty: 'easy', options: 5,
+    text: '你正在安静的咖啡馆看书，一个人坐到你对面开始打电话。你——',
+    optionTexts: ['主动攀谈起来','礼貌地笑了一下，继续看书','戴上耳机，假装他不存在','直接换了个位置','瞪了他一眼，希望他识趣离开'],
+    scoring: null
+  },
+  {
+    id: 'social_08', dimension: 'social', subfacet: 'tolerance', polarity: 'reverse',
+    leaning: 'isolate', difficulty: 'extreme', options: 5,
     text: '你已经连续三天没有和任何人说过话了。你——',
     optionTexts: ['终于！这才是理想的生活','有点舒服，但开始觉得哪里不对','没什么感觉','开始有点慌了，想找人说话','立刻约了朋友出来，不管对方有没有空'],
     scoring: null
   },
+  // maintenance: 2题 (1 reverse)
   {
-    id: 'social_04', dimension: 'social', subfacet: 'maintenance', polarity: 'direct',
-    leaning: 'connect', difficulty: 'boundary', options: 5,
+    id: 'social_09', dimension: 'social', subfacet: 'maintenance', polarity: 'direct',
+    leaning: 'connect', difficulty: 'easy', options: 5,
     text: '你很久没联系的老朋友突然发来消息："最近怎么样？"你——',
     optionTexts: ['秒回，然后约了周末见面','过了一会儿回，聊了几句','回了"还行"，然后就没下文了','已读不回，假装没看见','怀疑他是不是要借钱'],
     scoring: null
   },
+  {
+    id: 'social_10', dimension: 'social', subfacet: 'maintenance', polarity: 'reverse',
+    leaning: 'isolate', difficulty: 'boundary', options: 5,
+    text: '你突然发现已经两年没联系某个曾经最好的朋友了。你——',
+    optionTexts: ['立刻打了个电话过去','想联系，但不知道说什么就算了','翻了翻聊天记录，感慨了一番','都两年了，算了吧','打开朋友圈看看他最近在干嘛'],
+    scoring: null
+  },
+
+  // ===== 决策方式 decision (10题) =====
+  // logic: 3题 (1 reverse)
   {
     id: 'decision_01', dimension: 'decision', subfacet: 'logic', polarity: 'reverse',
     leaning: 'rational', difficulty: 'easy', options: 5,
@@ -763,26 +909,73 @@ const questionPool = [
     scoring: null
   },
   {
-    id: 'decision_02', dimension: 'decision', subfacet: 'empathy', polarity: 'direct',
+    id: 'decision_02', dimension: 'decision', subfacet: 'logic', polarity: 'direct',
+    leaning: 'rational', difficulty: 'boundary', options: 5,
+    text: '你要买一台新电脑，你的选购流程是？',
+    optionTexts: ['做了个对比表格，列了十五个参数','看了三个测评视频就下单了','问了问朋友，他们说哪个好就买哪个','在实体店摸了摸手感就买了','至今还在纠结，电脑已经涨价了'],
+    scoring: null
+  },
+  {
+    id: 'decision_03', dimension: 'decision', subfacet: 'logic', polarity: 'direct',
+    leaning: 'rational', difficulty: 'extreme', options: 5,
+    text: '你在两个城市之间选择定居。你列了二十多个维度打分对比，最后——',
+    optionTexts: ['严格按分数选了得分高的','分数差不多，又加了几个维度重新算','算了，还是去我更喜欢的那个','问了所有朋友，用了加权平均法','三年了还在两个城市之间来回跑'],
+    scoring: null
+  },
+  // empathy: 3题
+  {
+    id: 'decision_04', dimension: 'decision', subfacet: 'empathy', polarity: 'direct',
     leaning: 'emotional', difficulty: 'easy', options: 5,
     text: '朋友哭着跟你说她分手了，但你觉得她前男友其实没做错什么。你——',
     optionTexts: ['直接告诉她"我觉得你也有问题"','先安慰她，等她情绪好了再说实话','什么都没说，只是陪着她','跟着一起骂前男友，虽然你觉得他挺冤的','给她点了杯奶茶，然后转移话题'],
     scoring: null
   },
   {
-    id: 'decision_03', dimension: 'decision', subfacet: 'intuition', polarity: 'direct',
+    id: 'decision_05', dimension: 'decision', subfacet: 'empathy', polarity: 'direct',
     leaning: 'emotional', difficulty: 'boundary', options: 5,
+    text: '你看到一个流浪汉在路边淋雨。你——',
+    optionTexts: ['给他买了把伞和一碗热面','路过时心里不舒服，但没做什么','给了他二十块钱','拍了张照片发朋友圈呼吁关注','绕道走了，怕他找我搭话'],
+    scoring: null
+  },
+  {
+    id: 'decision_06', dimension: 'decision', subfacet: 'empathy', polarity: 'direct',
+    leaning: 'emotional', difficulty: 'extreme', options: 5,
+    text: '你的好朋友做了一个你觉得很蠢的决定，正在兴头上。你——',
+    optionTexts: ['直接说"你这样做会后悔的"','先夸他，等他自己碰壁','什么都不说，尊重他的选择','帮他分析了利弊，让他自己决定','假装支持，其实已经在准备善后了'],
+    scoring: null
+  },
+  // intuition: 2题
+  {
+    id: 'decision_07', dimension: 'decision', subfacet: 'intuition', polarity: 'direct',
+    leaning: 'emotional', difficulty: 'easy', options: 5,
     text: '你要租一个房子，A 设施好但感觉不对，B 设施一般但你一进门就觉得"就是这里"。你——',
     optionTexts: ['选 B，跟着感觉走','两个都不选，继续找','选 A，设施好的实际价值更高','让朋友来帮忙看看，听他们的意见','纠结到合同截止日期过了也没选'],
     scoring: null
   },
   {
-    id: 'decision_04', dimension: 'decision', subfacet: 'indecision', polarity: 'reverse',
-    leaning: 'rational', difficulty: 'boundary', options: 5,
+    id: 'decision_08', dimension: 'decision', subfacet: 'intuition', polarity: 'direct',
+    leaning: 'emotional', difficulty: 'boundary', options: 5,
+    text: '你第一次见到某个人，对方言行举止都无可挑剔，但你就是觉得不对劲。你——',
+    optionTexts: ['相信直觉，保持距离','觉得是自己想多了，继续接触','跟朋友讨论了一下他的面相','没有特别的感觉','直接问他"你是不是在演？"'],
+    scoring: null
+  },
+  // indecision: 2题 (reverse)
+  {
+    id: 'decision_09', dimension: 'decision', subfacet: 'indecision', polarity: 'reverse',
+    leaning: 'rational', difficulty: 'easy', options: 5,
     text: '你在超市选洗发水，面前有二十多个品牌。你——',
     optionTexts: ['随便拿一个，反正都差不多','快速比较了三个，选了性价比最高的','研究了成分表和用户评价，花了四十分钟','最后什么都没买，回家用肥皂洗头','拍了照片发群里让大家帮你选'],
     scoring: null
   },
+  {
+    id: 'decision_10', dimension: 'decision', subfacet: 'indecision', polarity: 'reverse',
+    leaning: 'rational', difficulty: 'extreme', options: 5,
+    text: '你打开外卖软件，距离饿死还有三十分钟，你的下单过程是？',
+    optionTexts: ['三分钟选好，下单，等吃','比价了五个平台，选了最便宜的','看了半小时评论，最后选了第一家看的','关掉软件，泡了碗方便面','还没决定就饿过了'],
+    scoring: null
+  },
+
+  // ===== 有效性检查 validity (3题 - 保持不变) =====
   {
     id: 'validity_01', dimension: 'validity', subfacet: 'attention', polarity: 'direct',
     leaning: 'neutral', difficulty: 'easy', options: 5,
