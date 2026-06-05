@@ -642,6 +642,34 @@ const dimensions = [
   }
 ];
 
+// ── 子维度配置（大五因子映射） ──────────────────
+const subfacets = {
+  stress: [
+    { id: 'anxiety', name: '焦虑倾向', source: '神经质 → 焦虑', weight: 0.3 },
+    { id: 'resilience', name: '压力韧性', source: '神经质 → 压力敏感', weight: 0.3 },
+    { id: 'action', name: '行动力', source: '尽责性 → 自律', weight: 0.2 },
+    { id: 'avoidance', name: '回避倾向', source: '神经质 → 冲动性', weight: 0.2 }
+  ],
+  emotion: [
+    { id: 'awareness', name: '情绪觉察', source: '开放性 → 感受性', weight: 0.3 },
+    { id: 'suppression', name: '情绪抑制', source: '神经质 → 冲动性', weight: 0.3 },
+    { id: 'release', name: '情绪释放', source: '开放性 → 幻想', weight: 0.2 },
+    { id: 'stability', name: '情绪稳定性', source: '神经质 → 情绪性', weight: 0.2 }
+  ],
+  social: [
+    { id: 'energy', name: '社交能量', source: '外向性 → 热情', weight: 0.3 },
+    { id: 'trust', name: '信任倾向', source: '宜人性 → 信任', weight: 0.3 },
+    { id: 'tolerance', name: '孤独耐受', source: '外向性 → 合群性', weight: 0.2 },
+    { id: 'maintenance', name: '关系维护', source: '宜人性 → 顺从', weight: 0.2 }
+  ],
+  decision: [
+    { id: 'logic', name: '逻辑依赖', source: '开放性 → 概念化', weight: 0.3 },
+    { id: 'empathy', name: '共情驱动', source: '宜人性 → 利他', weight: 0.3 },
+    { id: 'intuition', name: '直觉倾向', source: '开放性 → 幻想', weight: 0.2 },
+    { id: 'indecision', name: '决策焦虑', source: '神经质 → 犹豫', weight: 0.2 }
+  ]
+};
+
 const questions = [
   // 压力应对维度（抗争 vs 逃避）
   {
