@@ -1,676 +1,7 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>精神状态鉴定中心</title>
-<meta name="description" content="40道题，20种人格原型。你可能是「清醒的疯子」，也可能是「体面的废物」——鲁迅式黑色幽默的灵魂鉴定，测完不敢发朋友圈算我输。">
-<meta name="keywords" content="心理测试,人格测试,趣味测试,精神状态鉴定,MBTI,性格测试,鲁迅,黑色幽默,灵魂鉴定,SBTI,心理画像">
-<meta name="author" content="lycbee">
-
-<meta property="og:type" content="website">
-<meta property="og:title" content="精神状态鉴定中心 — 你是什么品种的精神状态？">
-<meta property="og:description" content="40道题测出你的人格原型。清醒的疯子？体面的废物？鲁迅式黑色幽默的灵魂鉴定。">
-<meta property="og:image" content="https://lycbee.github.io/mental-state-assessment/og-image.png">
-<meta property="og:url" content="https://lycbee.github.io/mental-state-assessment/">
-
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="精神状态鉴定中心 — 你是什么品种的精神状态？">
-<meta name="twitter:description" content="40道题，20种人格原型，鲁迅式黑色幽默的灵魂鉴定">
-<meta name="twitter:image" content="https://lycbee.github.io/mental-state-assessment/og-image.png">
-
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='8' fill='%23a8321f'/><text x='50' y='72' font-size='60' text-anchor='middle' fill='%23e9e2d0' font-family='serif'>鑒</text></svg>">
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#a8321f">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap');
-
-  :root {
-    --paper: #e9e2d0;
-    --paper-dark: #ddd2ba;
-    --ink: #1f1810;
-    --ink-soft: #4a3f30;
-    --sepia: #8a6b3a;
-    --vermilion: #a8321f;
-    --vermilion-dim: #7a2415;
-    --line: #2b2620;
-    --hair: #b3a684;
-  }
-
-  body {
-    font-family: "Noto Serif SC", "Source Han Serif SC", Georgia, serif;
-    background: var(--paper);
-    color: var(--ink);
-    min-height: 100vh;
-    overflow-x: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-image:
-      radial-gradient(ellipse at 18% 12%, rgba(138,107,58,0.10) 0%, transparent 45%),
-      radial-gradient(ellipse at 85% 88%, rgba(120,90,40,0.12) 0%, transparent 50%),
-      radial-gradient(rgba(120,90,40,0.06) 1px, transparent 1px);
-    background-size: auto, auto, 4px 4px;
-  }
-
-  canvas#bg-canvas {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    z-index: 0;
-    pointer-events: none;
-    opacity: 0.5;
-  }
-
-  #app {
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    max-width: 640px;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  /* --- Screens --- */
-  .screen {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    animation: paperFadeIn 0.5s ease;
-  }
-  .screen.active { display: flex; }
-
-  @keyframes paperFadeIn {
-    0% { opacity: 0; transform: translateY(12px); }
-    100% { opacity: 1; transform: translateY(0); }
-  }
-
-  /* --- Intro --- */
-  .symbol {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    filter: sepia(0.7) grayscale(0.3) brightness(0.7);
-    cursor: default;
-  }
-
-  h1 {
-    font-family: "Noto Serif SC", serif;
-    font-size: 1.85rem;
-    font-weight: 900;
-    letter-spacing: 0.18em;
-    margin-bottom: 0.4rem;
-    text-align: center;
-    color: #160f08;
-    border-top: 3px double var(--line);
-    border-bottom: 3px double var(--line);
-    padding: 0.5rem 0;
-  }
-
-  .subtitle {
-    font-family: "Noto Serif SC", serif;
-    font-size: 0.9rem;
-    color: var(--ink-soft);
-    text-align: center;
-    line-height: 2;
-    max-width: 480px;
-    margin: 1.2rem auto 2.5rem;
-    border-top: 1px solid var(--hair);
-    border-bottom: 1px solid var(--hair);
-    padding: 0.9rem 0;
-  }
-
-  .intro-content { position: relative; display: flex; flex-direction: column; align-items: center; }
-  .corner-seal {
-    position: absolute; top: -0.5rem; right: 0;
-    width: 50px; height: 50px;
-    border: 2.5px solid var(--vermilion); color: var(--vermilion);
-    border-radius: 4px; font-weight: 900; font-size: 1.1rem;
-    display: flex; align-items: center; justify-content: center;
-    writing-mode: vertical-rl; letter-spacing: 0.1em;
-    transform: rotate(7deg); opacity: 0.82;
-  }
-  .dateline {
-    font-size: 0.78rem; color: var(--sepia); letter-spacing: 0.05em;
-    text-align: center; margin-top: 0.3rem;
-  }
-
-  .btn {
-    background: var(--vermilion);
-    border: none;
-    color: #f5ecd8;
-    padding: 0.85rem 2.6rem;
-    font-family: "Noto Serif SC", serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    letter-spacing: 0.25em;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    border-radius: 2px;
-    box-shadow: 3px 3px 0 var(--vermilion-dim);
-  }
-  .btn:hover {
-    background: var(--vermilion-dim);
-    box-shadow: 1px 1px 0 var(--vermilion-dim);
-    transform: translate(2px, 2px);
-  }
-  .btn:active { transform: translate(3px, 3px); box-shadow: none; }
-
-  /* --- Progress --- */
-  .progress-wrap {
-    width: 100%;
-    margin-bottom: 2.5rem;
-  }
-  .progress-bar {
-    width: 100%;
-    height: 6px;
-    background: #cdbf9e;
-    border: 1px solid var(--hair);
-    position: relative;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: var(--vermilion);
-    transition: width 0.4s ease;
-  }
-  .progress-num {
-    text-align: right;
-    font-family: "Noto Serif SC", serif;
-    font-size: 0.78rem;
-    color: var(--sepia);
-    margin-top: 0.5rem;
-    letter-spacing: 0.12em;
-  }
-
-  /* --- Question --- */
-  #screen-question {
-    transition: opacity 0.25s ease, transform 0.25s ease;
-  }
-  .question-text {
-    font-family: "Noto Serif SC", serif;
-    font-size: 1.15rem;
-    font-weight: 700;
-    line-height: 1.8;
-    text-align: left;
-    margin-bottom: 2rem;
-    min-height: 3em;
-    color: #160f08;
-    position: relative;
-  }
-  .question-text::before {
-    content: "問　";
-    color: var(--vermilion);
-    font-weight: 900;
-  }
-
-  .choices {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    width: 100%;
-  }
-
-  .choice {
-    background: rgba(255,252,244,0.4);
-    border: 1px solid var(--hair);
-    padding: 0.95rem 1.2rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-align: left;
-    font-family: "Noto Serif SC", serif;
-    font-size: 0.9rem;
-    color: var(--ink);
-    letter-spacing: 0.02em;
-    line-height: 1.7;
-    position: relative;
-    border-radius: 2px;
-  }
-  .choice:hover {
-    border-color: var(--vermilion);
-    background: #fffdf7;
-    transform: translateX(4px);
-  }
-  .choice:active { transform: scale(0.98); }
-  .choice .letter {
-    display: inline-block;
-    font-family: "Noto Serif SC", serif;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--vermilion);
-    margin-right: 0.5rem;
-  }
-
-  /* --- Results --- */
-  .result-type {
-    font-family: "Noto Serif SC", serif;
-    font-size: 0.78rem;
-    letter-spacing: 0.3em;
-    color: var(--vermilion);
-    margin-bottom: 0.5rem;
-    text-align: center;
-  }
-
-  .result-name {
-    font-family: "Noto Serif SC", serif;
-    font-size: 1.9rem;
-    font-weight: 900;
-    letter-spacing: 0.1em;
-    margin-bottom: 0.4rem;
-    text-align: center;
-    color: #160f08;
-  }
-
-  .result-subtitle {
-    font-family: "Noto Serif SC", serif;
-    font-size: 0.85rem;
-    color: var(--ink-soft);
-    text-align: center;
-    margin-bottom: 1.5rem;
-    border-bottom: 3px double var(--line);
-    padding-bottom: 1rem;
-  }
-
-  .result-card {
-    background: rgba(255,252,244,0.5);
-    border: 1px solid var(--hair);
-    padding: 1.75rem;
-    width: 100%;
-    margin-bottom: 1.5rem;
-    border-radius: 2px;
-    box-shadow: inset 0 0 30px rgba(90,60,20,0.06);
-  }
-
-  .result-section {
-    margin-bottom: 1.75rem;
-  }
-  .result-section:last-child { margin-bottom: 0; }
-
-  .result-label {
-    font-family: "Noto Serif SC", serif;
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    color: var(--vermilion);
-    margin-bottom: 0.6rem;
-    border-left: 3px solid var(--vermilion);
-    padding-left: 0.8rem;
-  }
-
-  .result-text {
-    font-family: "Noto Serif SC", "Source Han Serif SC", Georgia, serif;
-    font-size: 0.95rem;
-    line-height: 2;
-    color: var(--ink);
-  }
-
-  .btn-restart {
-    margin-top: 1.5rem;
-    font-size: 0.85rem;
-    padding: 0.6rem 2rem;
-    letter-spacing: 0.2em;
-    background: transparent;
-    color: var(--vermilion);
-    border: 1.5px solid var(--vermilion);
-    box-shadow: 2px 2px 0 var(--vermilion-dim);
-  }
-  .btn-restart:hover {
-    background: var(--vermilion);
-    color: #f5ecd8;
-    box-shadow: 1px 1px 0 var(--vermilion-dim);
-    transform: translate(1px, 1px);
-  }
-
-  /* --- Share --- */
-  .share-section {
-    width: 100%;
-    text-align: center;
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px dashed var(--hair);
-  }
-
-  .share-title {
-    font-family: "Noto Serif SC", serif;
-    font-size: 0.82rem;
-    color: var(--sepia);
-    letter-spacing: 0.15em;
-    margin-bottom: 1rem;
-  }
-
-  .share-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .btn-share {
-    background: transparent;
-    border: 1.5px solid var(--vermilion);
-    color: var(--vermilion);
-    padding: 0.55rem 1.5rem;
-    font-family: "Noto Serif SC", serif;
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    border-radius: 2px;
-    box-shadow: 2px 2px 0 var(--vermilion-dim);
-  }
-
-  .btn-share:hover {
-    background: var(--vermilion);
-    color: #f5ecd8;
-    box-shadow: 1px 1px 0 var(--vermilion-dim);
-    transform: translate(1px, 1px);
-  }
-
-  .share-toast {
-    font-size: 0.78rem;
-    color: var(--sepia);
-    margin-top: 0.8rem;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    letter-spacing: 0.1em;
-  }
-
-  .share-toast.show {
-    opacity: 1;
-  }
-
-  /* 进度条容器 */
-  .progress-bar-container { width: 100%; margin: 1rem 0; }
-
-  .dim-progress-bar {
-    width: 100%;
-    height: 9px;
-    background: #cdbf9e;
-    border: 1px solid var(--hair);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .dim-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--sepia), var(--vermilion));
-    transition: width 0.5s ease;
-  }
-
-  .progress-label {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 0.5rem;
-    font-size: 0.8rem;
-    color: var(--ink-soft);
-  }
-
-  .progress-value { color: var(--vermilion); font-weight: 700; }
-
-  /* Result header */
-  .result-header { text-align: center; margin-bottom: 2rem; position: relative; }
-
-  /* Overall score */
-  .overall-score {
-    text-align: center;
-    padding: 1.5rem;
-    background: rgba(168,50,31,0.06);
-    border: 1px solid var(--hair);
-    border-radius: 2px;
-    margin-bottom: 1.5rem;
-  }
-
-  .score-number {
-    font-family: "Noto Serif SC", serif;
-    font-size: 3.5rem;
-    font-weight: 900;
-    color: var(--vermilion);
-    line-height: 1;
-  }
-
-  .score-label { font-size: 1.3rem; color: #160f08; margin: 0.5rem 0; font-weight: 700; }
-  .score-description { font-size: 0.9rem; color: var(--ink-soft); }
-
-  /* Composite scores */
-  .composite-scores {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-
-  .composite-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.75rem;
-    background: rgba(255,252,244,0.5);
-    border-radius: 2px;
-    border-left: 3px solid var(--sepia);
-  }
-
-  .composite-label { color: var(--ink-soft); font-size: 0.85rem; }
-  .composite-value { color: var(--vermilion); font-weight: 700; }
-
-  /* --- Responsive --- */
-  @media (max-width: 768px) {
-    #app {
-      padding: 1.5rem;
-    }
-
-    h1 {
-      font-size: 1.5rem;
-      letter-spacing: 0.15em;
-    }
-
-    .question-text {
-      font-size: 1rem;
-    }
-
-    .result-name {
-      font-size: 1.8rem;
-    }
-
-    .choice {
-      padding: 1rem 1.25rem;
-      font-size: 0.85rem;
-    }
-
-    .progress-bar-container {
-      margin: 0.8rem 0;
-    }
-  }
-
-  @media (max-width: 480px) {
-    #app {
-      padding: 1rem;
-    }
-
-    h1 {
-      font-size: 1.3rem;
-      letter-spacing: 0.1em;
-    }
-
-    .question-text {
-      font-size: 0.9rem;
-    }
-
-    .result-name {
-      font-size: 1.5rem;
-    }
-
-    .choice {
-      padding: 0.8rem 1rem;
-      font-size: 0.8rem;
-    }
-
-    .symbol { font-size: 3.5rem; }
-
-    .composite-scores {
-      grid-template-columns: 1fr;
-    }
-
-    .score-number {
-      font-size: 3rem;
-    }
-
-    .btn-share {
-      padding: 0.5rem 1.2rem;
-      font-size: 0.78rem;
-    }
-  }
-</style>
-</head>
-<body>
-
-<canvas id="bg-canvas"></canvas>
-
-<div id="app">
-  <!-- Intro Screen -->
-  <div class="screen active" id="screen-intro"></div>
-
-  <!-- Question Screen -->
-  <div class="screen" id="screen-question">
-    <div class="progress-wrap">
-      <div class="progress-bar">
-        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-      </div>
-      <div class="progress-num" id="progress-num">1 / 20</div>
-    </div>
-    <div class="question-text" id="question-text"></div>
-    <div class="choices" id="choices"></div>
-  </div>
-
-  <!-- Result Screen -->
-  <div class="screen" id="screen-result"></div>
-</div>
-
-<script>
-// ── Background Canvas — Ink Rain ──────────────────────
-const canvas = document.getElementById('bg-canvas');
-const ctx = canvas.getContext('2d');
-let w, h;
-const inkDrops = [];
-const inkChars = '人生在世孤独沉默呐喊彷徨抗争逃避压抑宣泄疏离连接铁屋〇墨';
-
-function resize() {
-  w = canvas.width = window.innerWidth;
-  h = canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resize);
-resize();
-
-// 墨色落字/落点
-for (let i = 0; i < 36; i++) {
-  inkDrops.push({
-    x: Math.random() * w,
-    y: Math.random() * h,
-    char: Math.random() > 0.45 ? inkChars[Math.floor(Math.random() * inkChars.length)] : '·',
-    speed: Math.random() * 0.35 + 0.08,
-    opacity: Math.random() * 0.10 + 0.03,
-    size: Math.random() * 14 + 10,
-    drift: (Math.random() - 0.5) * 0.15
-  });
-}
-
-function drawInkDrop(d) {
-  d.y += d.speed;
-  d.x += d.drift;
-  if (d.y > h + 24 || d.x < -30 || d.x > w + 30) {
-    d.y = -24;
-    d.x = Math.random() * w;
-    d.char = Math.random() > 0.45 ? inkChars[Math.floor(Math.random() * inkChars.length)] : '·';
-    d.opacity = Math.random() * 0.10 + 0.03;
-  }
-  ctx.font = `${d.size}px "Noto Serif SC", serif`;
-  ctx.fillStyle = `rgba(31,24,16,${d.opacity})`;
-  ctx.fillText(d.char, d.x, d.y);
-}
-
-// 性能优化：节流函数
-function throttle(func, limit) {
-  let inThrottle;
-  return function() {
-    const args = arguments;
-    const context = this;
-    if (!inThrottle) {
-      func.apply(context, args);
-      inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
-    }
-  };
-}
-
-// 优化canvas动画
-const animate = throttle(function() {
-  ctx.clearRect(0, 0, w, h);
-  inkDrops.forEach(d => drawInkDrop(d));
-  requestAnimationFrame(animate);
-}, 33); // ~30fps，纸面慢节奏，省性能
-animate();
-
-// ── Data ───────────────────────────────────────────────
-
-const dimensions = [
-  {
-    key: 'stress',
-    name: '压力应对',
-    labels: ['抗争', '逃避'],
-    desc: '面对社会压力时，你是选择迎难而上，还是选择躺平逃避？'
-  },
-  {
-    key: 'emotion',
-    name: '情绪管理',
-    labels: ['压抑', '宣泄'],
-    desc: '面对负面情绪时，你是选择默默承受，还是选择爆发出来？'
-  },
-  {
-    key: 'social',
-    name: '社交模式',
-    labels: ['疏离', '连接'],
-    desc: '面对人际关系时，你是选择独来独往，还是选择与人连接？'
-  },
-  {
-    key: 'decision',
-    name: '决策方式',
-    labels: ['理性', '感性'],
-    desc: '面对选择时，你是依靠逻辑分析，还是依靠直觉感受？'
-  }
-];
-
-// ── 子维度配置（大五因子映射） ──────────────────
-const subfacets = {
-  stress: [
-    { id: 'anxiety', name: '焦虑倾向', source: '神经质 → 焦虑', weight: 0.3 },
-    { id: 'resilience', name: '压力韧性', source: '神经质 → 压力敏感', weight: 0.3 },
-    { id: 'action', name: '行动力', source: '尽责性 → 自律', weight: 0.2 },
-    { id: 'avoidance', name: '回避倾向', source: '神经质 → 冲动性', weight: 0.2 }
-  ],
-  emotion: [
-    { id: 'awareness', name: '情绪觉察', source: '开放性 → 感受性', weight: 0.3 },
-    { id: 'suppression', name: '情绪抑制', source: '神经质 → 冲动性', weight: 0.3 },
-    { id: 'release', name: '情绪释放', source: '开放性 → 幻想', weight: 0.2 },
-    { id: 'stability', name: '情绪稳定性', source: '神经质 → 情绪性', weight: 0.2 }
-  ],
-  social: [
-    { id: 'energy', name: '社交能量', source: '外向性 → 热情', weight: 0.3 },
-    { id: 'trust', name: '信任倾向', source: '宜人性 → 信任', weight: 0.3 },
-    { id: 'tolerance', name: '孤独耐受', source: '外向性 → 合群性', weight: 0.2 },
-    { id: 'maintenance', name: '关系维护', source: '宜人性 → 顺从', weight: 0.2 }
-  ],
-  decision: [
-    { id: 'logic', name: '逻辑依赖', source: '开放性 → 概念化', weight: 0.3 },
-    { id: 'empathy', name: '共情驱动', source: '宜人性 → 利他', weight: 0.3 },
-    { id: 'intuition', name: '直觉倾向', source: '开放性 → 幻想', weight: 0.2 },
-    { id: 'indecision', name: '决策焦虑', source: '神经质 → 犹豫', weight: 0.2 }
-  ]
-};
-
-const questionPool = [
+  const questionPool = [
+  // ══════════════════════════════════════════════════════════
+  //  STRESS (压力应对: 抗争 vs 逃避) — 10 questions
+  // ══════════════════════════════════════════════════════════
   {
     id: 'stress_01', dimension: 'stress', subfacet: 'anxiety', polarity: 'direct',
     leaning: 'escape', difficulty: 'easy', options: 5,
@@ -679,26 +10,72 @@ const questionPool = [
     scoring: null
   },
   {
-    id: 'stress_02', dimension: 'stress', subfacet: 'resilience', polarity: 'direct',
+    id: 'stress_02', dimension: 'stress', subfacet: 'anxiety', polarity: 'direct',
+    leaning: 'escape', difficulty: 'boundary', options: 5,
+    text: '体检报告出来了，有一项指标偏高。医生说"建议复查"。你——',
+    optionTexts: ['立刻预约了最贵的专家号','上网搜了一下，吓出一身冷汗','第二天就去复查了','跟朋友说了一声，然后忘了','搜索了一下墓地价格'],
+    scoring: null
+  },
+  {
+    id: 'stress_03', dimension: 'stress', subfacet: 'resilience', polarity: 'direct',
     leaning: 'fight', difficulty: 'easy', options: 5,
     text: '你被同事甩锅了，你？',
     optionTexts: ['当面指出问题，要求道歉','私下找同事沟通','算了，不计较','在朋友圈发阴阳怪气的内容','越级汇报'],
     scoring: null
   },
   {
-    id: 'stress_03', dimension: 'stress', subfacet: 'action', polarity: 'direct',
+    id: 'stress_04', dimension: 'stress', subfacet: 'resilience', polarity: 'direct',
+    leaning: 'fight', difficulty: 'extreme', options: 5,
+    text: '你连续加班三周，周末又被叫回去。你走进办公室，发现只有你一个人。你——',
+    optionTexts: ['打开电脑，开始干活','跟领导说"这是最后一次"','直接回家，关机','在工位上坐了一会儿，然后哭了','辞职信写好了，但没发'],
+    scoring: null
+  },
+  {
+    id: 'stress_05', dimension: 'stress', subfacet: 'action', polarity: 'direct',
     leaning: 'fight', difficulty: 'boundary', options: 5,
     text: '你的年度目标清单上大概有多少条？',
     optionTexts: ['四十七条。每一条都有详细的子任务和甘特图','五条左右，大概知道方向就行','年度目标？我一般只设置"本周目标"——活到周五','没有目标。目标是资本主义的陷阱','有目标，但从没完成过'],
     scoring: null
   },
   {
-    id: 'stress_04', dimension: 'stress', subfacet: 'avoidance', polarity: 'reverse',
+    id: 'stress_06', dimension: 'stress', subfacet: 'action', polarity: 'direct',
+    leaning: 'fight', difficulty: 'easy', options: 6,
+    text: '你的手机掉进马桶了。你——',
+    optionTexts: ['立刻伸手去捞','犹豫了三秒，然后捞','拍照发朋友圈，配文"今天运气真好"','直接买新的','先关机，然后冷静分析','手机：我做错了什么？'],
+    scoring: null
+  },
+  {
+    id: 'stress_07', dimension: 'stress', subfacet: 'avoidance', polarity: 'reverse',
     leaning: 'escape', difficulty: 'boundary', options: 5,
     text: '你有一个重要的任务明天要交。现在是晚上十点，你的进度是？',
     optionTexts: ['已经完成了，还在检查细节','大概完成了百分之八十','还没开始，但列了详细计划','刚开始，准备通宵','完全没动，正在刷手机'],
     scoring: null
   },
+  {
+    id: 'stress_08', dimension: 'stress', subfacet: 'avoidance', polarity: 'reverse',
+    leaning: 'escape', difficulty: 'extreme', options: 5,
+    text: '你已经三个月没找工作了。存款还够撑两个月。你每天的生活是？',
+    optionTexts: ['上午投简历，下午面试，晚上复盘','每天投两个，然后打游戏','投过几份，但都没回音，现在不投了','假装在找工作，其实在追剧','已经想好回老家了'],
+    scoring: null
+  },
+  {
+    id: 'stress_09', dimension: 'stress', subfacet: 'anxiety', polarity: 'direct',
+    leaning: 'escape', difficulty: 'extreme', options: 5,
+    text: '你坐的飞机突然剧烈颠簸，广播里说"请系好安全带"。你——',
+    optionTexts: ['冷静地检查安全带，看窗外','开始在心里默念遗言','抓住旁边陌生人的手','假装很淡定，但手心全是汗','给最重要的人发了条消息'],
+    scoring: null
+  },
+  {
+    id: 'stress_10', dimension: 'stress', subfacet: 'resilience', polarity: 'direct',
+    leaning: 'fight', difficulty: 'easy', options: 5,
+    text: '你排了两小时队，终于轮到你了，被告知"系统故障，明天再来"。你——',
+    optionTexts: ['拍桌子，要求找经理','忍了，明天再来','微笑着说"好的"，然后去吃了顿好的','在投诉簿上写了一篇论文','算了，不办了'],
+    scoring: null
+  },
+
+  // ══════════════════════════════════════════════════════════
+  //  EMOTION (情绪管理: 压抑 vs 宣泄) — 10 questions
+  // ══════════════════════════════════════════════════════════
   {
     id: 'emotion_01', dimension: 'emotion', subfacet: 'awareness', polarity: 'direct',
     leaning: 'vent', difficulty: 'easy', options: 5,
@@ -707,26 +84,72 @@ const questionPool = [
     scoring: null
   },
   {
-    id: 'emotion_02', dimension: 'emotion', subfacet: 'suppression', polarity: 'reverse',
+    id: 'emotion_02', dimension: 'emotion', subfacet: 'awareness', polarity: 'direct',
+    leaning: 'vent', difficulty: 'boundary', options: 6,
+    text: '你刚升职了。同事们都来祝贺你。你的内心真实感受是？',
+    optionTexts: ['真的很开心，想请客','开心，但更多的是压力','无所谓，只是一个title','表面微笑，内心在想"接下来怎么办"','有点空虚，好像少了点什么','开心，但怕别人觉得我在炫耀'],
+    scoring: null
+  },
+  {
+    id: 'emotion_03', dimension: 'emotion', subfacet: 'suppression', polarity: 'reverse',
     leaning: 'suppress', difficulty: 'easy', options: 5,
     text: '你刚和伴侣吵完架，对方摔门进了卧室。客厅只剩你一个人。你——',
     optionTexts: ['坐在沙发上，把刚才的对话在脑子里过了二十遍','打开电视，试图用别人的故事盖住自己的','走到阳台抽了根烟，感觉好多了','推门进去说"我们谈谈"','开始收拾行李'],
     scoring: null
   },
   {
-    id: 'emotion_03', dimension: 'emotion', subfacet: 'release', polarity: 'direct',
+    id: 'emotion_04', dimension: 'emotion', subfacet: 'suppression', polarity: 'reverse',
+    leaning: 'suppress', difficulty: 'extreme', options: 5,
+    text: '你养了十年的狗去世了。你回到家，看见它的窝还在门口。你——',
+    optionTexts: ['把窝收起来，假装什么都没发生','在窝旁边坐了一下午','抱着窝哭了一场','立刻又买了一只新的','把窝留在原地，每天还是会多看一眼'],
+    scoring: null
+  },
+  {
+    id: 'emotion_05', dimension: 'emotion', subfacet: 'release', polarity: 'direct',
     leaning: 'vent', difficulty: 'boundary', options: 5,
     text: '你今天过得很糟糕。回到家关上门后，你——',
     optionTexts: ['躺在床上，什么都不想做','打开音乐，把音量调到最大','给朋友发了一大段消息吐槽','打开备忘录，写了一篇三千字的日记','点了一份外卖，用食物填补空虚'],
     scoring: null
   },
   {
-    id: 'emotion_04', dimension: 'emotion', subfacet: 'stability', polarity: 'direct',
+    id: 'emotion_06', dimension: 'emotion', subfacet: 'release', polarity: 'direct',
+    leaning: 'vent', difficulty: 'extreme', options: 5,
+    text: '你被分手了。对方说"我们不合适"。你——',
+    optionTexts: ['删了所有联系方式，哭了一整夜','喝了三瓶啤酒，然后给前任打了电话','发了条朋友圈，配文"单身万岁"','去找朋友倾诉，说到最后自己都烦了','第二天照常上班，假装什么都没发生'],
+    scoring: null
+  },
+  {
+    id: 'emotion_07', dimension: 'emotion', subfacet: 'stability', polarity: 'direct',
     leaning: 'suppress', difficulty: 'boundary', options: 5,
     text: '你在地铁上被人踩了一脚，对方没道歉。你的内心活动是？',
     optionTexts: ['算了，可能他也不是故意的','有点不爽，但很快就忘了','气死了，但忍住了','一整天都在想这件事','截图发朋友圈，配文"今天遇到一个没素质的人"'],
     scoring: null
   },
+  {
+    id: 'emotion_08', dimension: 'emotion', subfacet: 'stability', polarity: 'direct',
+    leaning: 'suppress', difficulty: 'easy', options: 5,
+    text: '你正在加班，突然电脑死机了，文件没保存。你——',
+    optionTexts: ['深呼吸，重启电脑，重新开始','骂了一句，然后继续工作','把电脑砸了','给IT发了封措辞激烈的邮件','先去倒了杯水，冷静一下'],
+    scoring: null
+  },
+  {
+    id: 'emotion_09', dimension: 'emotion', subfacet: 'awareness', polarity: 'direct',
+    leaning: 'vent', difficulty: 'extreme', options: 5,
+    text: '你最好的朋友在背后说你坏话，被你亲耳听到了。你——',
+    optionTexts: ['当场质问，不管场合','装作没听见，但记住了','回家后大哭一场','发了条隐晦的朋友圈','直接拉黑，不解释'],
+    scoring: null
+  },
+  {
+    id: 'emotion_10', dimension: 'emotion', subfacet: 'suppression', polarity: 'reverse',
+    leaning: 'suppress', difficulty: 'easy', options: 5,
+    text: '你在公共场合突然想哭。你——',
+    optionTexts: ['忍住，找了个没人的角落','直接哭了，管他谁看见','假装打哈欠，用手遮住眼睛','快步离开现场','深呼吸，等情绪过去'],
+    scoring: null
+  },
+
+  // ══════════════════════════════════════════════════════════
+  //  SOCIAL (社交模式: 疏离 vs 连接) — 10 questions
+  // ══════════════════════════════════════════════════════════
   {
     id: 'social_01', dimension: 'social', subfacet: 'energy', polarity: 'direct',
     leaning: 'connect', difficulty: 'easy', options: 5,
@@ -735,26 +158,72 @@ const questionPool = [
     scoring: null
   },
   {
-    id: 'social_02', dimension: 'social', subfacet: 'trust', polarity: 'direct',
+    id: 'social_02', dimension: 'social', subfacet: 'energy', polarity: 'direct',
+    leaning: 'connect', difficulty: 'extreme', options: 5,
+    text: '你被迫参加了一个二十人的团建活动。结束后你——',
+    optionTexts: ['加了五个人的微信，约了下次见面','感觉不错，但需要三天恢复','回到家立刻躺平，电量耗尽','觉得浪费了一个周末','发了条朋友圈，配文"今天好开心"'],
+    scoring: null
+  },
+  {
+    id: 'social_03', dimension: 'social', subfacet: 'trust', polarity: 'direct',
     leaning: 'connect', difficulty: 'easy', options: 5,
     text: '新来的同事主动找你聊天，你——',
     optionTexts: ['热情回应，午饭就一起去吃了','礼貌回应，但保持距离','觉得他可能有所图','聊了几句就找借口离开了','直接问他"你是不是有什么事？"'],
     scoring: null
   },
   {
-    id: 'social_03', dimension: 'social', subfacet: 'tolerance', polarity: 'reverse',
+    id: 'social_04', dimension: 'social', subfacet: 'trust', polarity: 'direct',
+    leaning: 'connect', difficulty: 'boundary', options: 5,
+    text: '你刚认识了一个很聊得来的朋友。第二次见面时，对方问你"你家在哪？"你——',
+    optionTexts: ['直接告诉了他','犹豫了一下，说了个大概区域','找了个借口没回答','反问他"你问这个干嘛？"','开始觉得这个人有点奇怪'],
+    scoring: null
+  },
+  {
+    id: 'social_05', dimension: 'social', subfacet: 'tolerance', polarity: 'reverse',
     leaning: 'isolate', difficulty: 'boundary', options: 5,
     text: '你已经连续三天没有和任何人说过话了。你——',
     optionTexts: ['终于！这才是理想的生活','有点舒服，但开始觉得哪里不对','没什么感觉','开始有点慌了，想找人说话','立刻约了朋友出来，不管对方有没有空'],
     scoring: null
   },
   {
-    id: 'social_04', dimension: 'social', subfacet: 'maintenance', polarity: 'direct',
+    id: 'social_06', dimension: 'social', subfacet: 'tolerance', polarity: 'reverse',
+    leaning: 'isolate', difficulty: 'extreme', options: 5,
+    text: '你一个人住，已经一周没出门了。你的状态是？',
+    optionTexts: ['这才是理想的生活','有点爽，但冰箱空了','开始有点闷，但不想见人','焦虑了，但还是不想动','终于出门了，只是为了扔垃圾'],
+    scoring: null
+  },
+  {
+    id: 'social_07', dimension: 'social', subfacet: 'maintenance', polarity: 'direct',
     leaning: 'connect', difficulty: 'boundary', options: 5,
     text: '你很久没联系的老朋友突然发来消息："最近怎么样？"你——',
     optionTexts: ['秒回，然后约了周末见面','过了一会儿回，聊了几句','回了"还行"，然后就没下文了','已读不回，假装没看见','怀疑他是不是要借钱'],
     scoring: null
   },
+  {
+    id: 'social_08', dimension: 'social', subfacet: 'maintenance', polarity: 'direct',
+    leaning: 'connect', difficulty: 'easy', options: 5,
+    text: '你朋友的生日快到了。你——',
+    optionTexts: ['提前一周就开始准备礼物','当天发了条祝福消息','想了半天，最后发了个红包','想起了就发，忘了就算了','生日？谁的生日？'],
+    scoring: null
+  },
+  {
+    id: 'social_09', dimension: 'social', subfacet: 'tolerance', polarity: 'reverse',
+    leaning: 'isolate', difficulty: 'easy', options: 5,
+    text: '你独自一人在咖啡厅坐了一下午。你——',
+    optionTexts: ['感觉充电了，这是最好的独处时光','还不错，但有点无聊','没什么特别的感觉','想有人来搭话','喝了杯咖啡就走了，一个人太无聊'],
+    scoring: null
+  },
+  {
+    id: 'social_10', dimension: 'social', subfacet: 'trust', polarity: 'direct',
+    leaning: 'connect', difficulty: 'extreme', options: 5,
+    text: '你失恋了，朋友问你怎么了。你——',
+    optionTexts: ['哭着把所有细节都说了','说"没事"，然后转移话题','只说"分了"，不想多说','假装在忙，没看到消息','发了条朋友圈，但没提分手的事'],
+    scoring: null
+  },
+
+  // ══════════════════════════════════════════════════════════
+  //  DECISION (决策方式: 理性 vs 感性) — 10 questions
+  // ══════════════════════════════════════════════════════════
   {
     id: 'decision_01', dimension: 'decision', subfacet: 'logic', polarity: 'reverse',
     leaning: 'rational', difficulty: 'easy', options: 5,
@@ -763,26 +232,72 @@ const questionPool = [
     scoring: null
   },
   {
-    id: 'decision_02', dimension: 'decision', subfacet: 'empathy', polarity: 'direct',
+    id: 'decision_02', dimension: 'decision', subfacet: 'logic', polarity: 'reverse',
+    leaning: 'rational', difficulty: 'extreme', options: 5,
+    text: '你准备买房，中介催你做决定。你——',
+    optionTexts: ['直接交了定金，感觉对了就行','做了个二十页的调研报告','问了十个朋友的意见','还在纠结，已经看了三十套房','算了，不买了，租房也挺好'],
+    scoring: null
+  },
+  {
+    id: 'decision_03', dimension: 'decision', subfacet: 'empathy', polarity: 'direct',
     leaning: 'emotional', difficulty: 'easy', options: 5,
     text: '朋友哭着跟你说她分手了，但你觉得她前男友其实没做错什么。你——',
     optionTexts: ['直接告诉她"我觉得你也有问题"','先安慰她，等她情绪好了再说实话','什么都没说，只是陪着她','跟着一起骂前男友，虽然你觉得他挺冤的','给她点了杯奶茶，然后转移话题'],
     scoring: null
   },
   {
-    id: 'decision_03', dimension: 'decision', subfacet: 'intuition', polarity: 'direct',
+    id: 'decision_04', dimension: 'decision', subfacet: 'empathy', polarity: 'direct',
+    leaning: 'emotional', difficulty: 'extreme', options: 5,
+    text: '你的好朋友想辞职创业，你觉得他根本不是那块料。他问你意见。你——',
+    optionTexts: ['直接说"你不行，别冲动"','先鼓励，然后旁敲侧击','支持他，反正不是我的钱','编了个故事暗示风险','什么都没说，反正说了他也不听'],
+    scoring: null
+  },
+  {
+    id: 'decision_05', dimension: 'decision', subfacet: 'intuition', polarity: 'direct',
     leaning: 'emotional', difficulty: 'boundary', options: 5,
     text: '你要租一个房子，A 设施好但感觉不对，B 设施一般但你一进门就觉得"就是这里"。你——',
     optionTexts: ['选 B，跟着感觉走','两个都不选，继续找','选 A，设施好的实际价值更高','让朋友来帮忙看看，听他们的意见','纠结到合同截止日期过了也没选'],
     scoring: null
   },
   {
-    id: 'decision_04', dimension: 'decision', subfacet: 'indecision', polarity: 'reverse',
+    id: 'decision_06', dimension: 'decision', subfacet: 'intuition', polarity: 'direct',
+    leaning: 'emotional', difficulty: 'extreme', options: 5,
+    text: '你在路上遇到一个人，对方说"你看起来面熟"。你——',
+    optionTexts: ['跟他聊了起来，说不定真认识','礼貌回应，但保持距离','觉得是推销，直接走了','停下来想了想，好像在哪见过','交换了联系方式，以后再说'],
+    scoring: null
+  },
+  {
+    id: 'decision_07', dimension: 'decision', subfacet: 'indecision', polarity: 'reverse',
     leaning: 'rational', difficulty: 'boundary', options: 5,
     text: '你在超市选洗发水，面前有二十多个品牌。你——',
     optionTexts: ['随便拿一个，反正都差不多','快速比较了三个，选了性价比最高的','研究了成分表和用户评价，花了四十分钟','最后什么都没买，回家用肥皂洗头','拍了照片发群里让大家帮你选'],
     scoring: null
   },
+  {
+    id: 'decision_08', dimension: 'decision', subfacet: 'indecision', polarity: 'reverse',
+    leaning: 'rational', difficulty: 'easy', options: 5,
+    text: '朋友问你"中午吃什么？"你——',
+    optionTexts: ['随便，你定','想了三秒，说了个菜系','打开了大众点评，对比了二十家','纠结了十分钟，最后还是吃了昨天的','说"都行"，然后心里已经有了答案'],
+    scoring: null
+  },
+  {
+    id: 'decision_09', dimension: 'decision', subfacet: 'logic', polarity: 'reverse',
+    leaning: 'rational', difficulty: 'easy', options: 6,
+    text: '你正在网上购物，购物车里有五样东西。结账时你——',
+    optionTexts: ['全部删除，算了不买了','直接清空购物车','只留最便宜的那个','又比较了半小时，最后只买了一个','先买了再说，不喜欢再退','加了十样东西，然后全部删掉'],
+    scoring: null
+  },
+  {
+    id: 'decision_10', dimension: 'decision', subfacet: 'intuition', polarity: 'direct',
+    leaning: 'emotional', difficulty: 'easy', options: 5,
+    text: '你在街上看到一家新开的餐厅，装修一般但你就是想进去。你——',
+    optionTexts: ['直接进去了，跟着感觉走','进去吃了，味道一般但你很开心','看了看菜单，觉得太贵了就走了','拍照发朋友圈，问问大家的意见','记住了位置，下次再来'],
+    scoring: null
+  },
+
+  // ══════════════════════════════════════════════════════════
+  //  VALIDITY (效度检查) — 3 questions, unchanged
+  // ══════════════════════════════════════════════════════════
   {
     id: 'validity_01', dimension: 'validity', subfacet: 'attention', polarity: 'direct',
     leaning: 'neutral', difficulty: 'easy', options: 5,
@@ -805,979 +320,3 @@ const questionPool = [
     scoring: null, validityCheck: 2
   }
 ];
-
-const archetypes = {
-  '0000': {
-    name: '精神内耗大师',
-    subtitle: '用加班麻痹自己，用沉默对抗世界',
-    typeCode: 'JNSH',
-    desc: '你是那种明明已经精神死亡但肉体还在准时打卡的人。表面上你在呼吸，实际上你的灵魂已经提前下班很多年了。你安静、努力、不惹事——不是因为你想，而是因为你已经没有力气惹事了。你不喜欢说话，你喜欢不说话，你喜欢别人也别找你说话。你的微信签名是一个句号。你不太确定自己活着的意义，但你知道每个月的房租必须交。',
-    guidance: '你不需要"振作起来"。你已经够努力了。你需要的是允许自己休息——不是躺在床上刷手机那种休息，是真的、彻底的、不被任何人需要的那种休息。你内心的沉默不是空洞，而是一口井。不要再往里面扔石头了。安静地坐在井边，听一听——你可能会听见你自己的声音，而不是世界要求你成为的那个人。你不是死了。你是太累了。而累和死，是两回事。',
-    insight: '死者不是终点。冬眠的动物看起来也像死了。春天来的时候，它们自己会醒——前提是没有人把它们从洞里挖出来。'
-  },
-  '0001': {
-    name: '社恐影帝',
-    subtitle: '表面抗争，内心早已投降',
-    typeCode: 'SKYD',
-    desc: '你是那种在社交场合能完美扮演"正常人"的人。你会微笑、点头、附和，甚至能讲几个笑话。但你知道这一切都是演出来的。你的内心早就投降了——不是对社交投降，是对"必须社交"这个规则投降。你在聚会上的表现越好，回家后的崩溃就越彻底。你是影帝，但你的奥斯卡奖杯是孤独。',
-    guidance: '你的演技很好，但你不需要每时每刻都在演。你可以在信任的人面前摘下面具。你不需要一百个"朋友"，你只需要几个能让你不演的人。那些能让你摘下面具的人，才是真正的朋友。而那些需要你一直演的人——他们不值得你的表演。',
-    insight: '最好的演员不是在舞台上最耀眼的那个。最好的演员是能分清台上和台下的那个。'
-  },
-  '0010': {
-    name: '人间清醒患者',
-    subtitle: '清醒地看着自己沉沦，还要假装努力',
-    typeCode: 'RJQX',
-    desc: '你是那种看透了一切但依然选择装傻的人。你知道这个世界的规则，你知道努力不一定有回报，你知道"公平"只是用来安慰弱者的谎言。但你还是每天早上七点起床，挤地铁，打卡，开会，写报告。不是因为你相信这些有用，而是因为你需要让自己相信——至少在下班之前。',
-    guidance: '你的清醒是一种天赋，但过度清醒会变成诅咒。你不需要时刻提醒自己"这一切都没有意义"。有时候，假装相信一些东西，比彻底不相信要好受得多。你不需要真的相信努力会有回报——你只需要相信，今天的你比昨天的你多做了一点点。这就够了。',
-    insight: '清醒的人不是最痛苦的。清醒的人是最孤独的——因为他们看到了别人看不到的东西，却没有人可以分享。'
-  },
-  '0011': {
-    name: '情绪管理大师',
-    subtitle: '把崩溃调成静音模式，然后假装一切正常',
-    typeCode: 'QXGL',
-    desc: '你是那种能在地铁上哭完然后擦干眼泪继续上班的人。你的情绪管理能力很强——强到让人心疼。你把所有的崩溃都调成了静音模式，把所有的委屈都咽进了肚子里。你看起来很"稳"，但只有你知道，这个"稳"是用多少个失眠的夜晚换来的。',
-    guidance: '你不需要永远"稳"。你可以偶尔崩溃，可以偶尔不那么"情绪管理大师"。你身边的人不会因为你哭一次就离开。那些因为你偶尔崩溃就离开的人，从一开始就不值得你为他们管理情绪。你值得偶尔放纵一下自己的情绪——不是失控，是释放。',
-    insight: '情绪管理大师不是不哭。情绪管理大师是哭完了还能擦干眼泪继续走。但偶尔，你可以允许自己哭完了就躺着，不走了。'
-  },
-  '0100': {
-    name: '行走的段子手',
-    subtitle: '用笑话掩盖绝望，用自嘲对抗荒诞',
-    typeCode: 'XZDZ',
-    desc: '你是那种能在最糟糕的境遇里找到最好笑的角度的人。你把生活过成了一场脱口秀，把所有的痛苦都变成了段子。你看起来很"乐观"，但只有你知道，每一个笑话的背后都藏着一个不想说出口的故事。你是朋友圈里最活跃的那个，也是深夜一个人时最安静的那个。',
-    guidance: '你的幽默是你的武器，但也是你的盔甲。你用笑话把所有人挡在门外，包括那些真正想靠近你的人。你不需要每时每刻都好笑。你可以在信任的人面前，不讲笑话，只是安静地待着。那些能在你面前看到你不笑的人，才是真正的朋友。',
-    insight: '最好的段子手不是让所有人笑的那个。最好的段子手是笑完了还能认真生活的人。'
-  },
-  '0101': {
-    name: '情绪垃圾桶',
-    subtitle: '收集所有人的负面情绪，然后独自消化',
-    typeCode: 'QXLJ',
-    desc: '你是那种所有人都愿意向你倾诉的人。你像一个情绪垃圾桶，吸收了所有人的负面情绪——焦虑、愤怒、委屈、绝望。你总是说"我没事"，但你知道，你只是把所有人的"有事"都装进了自己心里。你是最好的倾听者，但没有人问过你——你还好吗？',
-    guidance: '你不需要拯救所有人。你可以选择性地吸收情绪——不是所有人的痛苦都需要你来承担。你也可以找人倾诉，也可以拒绝别人的倾诉。你不是垃圾桶，你是人。你也有情绪，也需要被照顾。下次有人向你倾诉的时候，你可以说："我也很难过，我们可以一起难过吗？"',
-    insight: '垃圾桶不是天生的。垃圾桶是被无数次"我没事"喂出来的。但垃圾桶也有满的一天。满了就倒，不要等到溢出来。'
-  },
-  '0110': {
-    name: '互联网嘴替',
-    subtitle: '在网上重拳出击，现实里唯唯诺诺',
-    typeCode: 'HLWZ',
-    desc: '你是那种在网上能为任何事情吵上三天三夜，但在现实中连外卖小哥多收了两块钱都不敢说的人。你的键盘是你的武器，屏幕是你的战场。你在网上的形象是一个正义凛然的战士，在现实中是一个连拒绝别人都不好意思的社恐。',
-    guidance: '你在网上的勇敢是真实的，你在现实中的怯懦也是真实的。这两者不矛盾——它们都是你。但你可以在现实中稍微勇敢一点点。不需要像网上那样重拳出击，只需要在该说"不"的时候说"不"。从小事开始：拒绝一个不想参加的聚会，退掉一个不需要的商品。你会发现，现实中的"重拳"没有你想象的那么难。',
-    insight: '互联网给了每个人一个麦克风，但不是每个人都学会了如何使用它。你已经学会了——现在是时候在现实中也练习一下了。'
-  },
-  '0111': {
-    name: '人间大炮',
-    subtitle: '把情绪当炮弹，炸完自己也粉身碎骨',
-    typeCode: 'RJDP',
-    desc: '你是一颗行走的情绪炸弹。你的情绪来得快去得也快，但来的时候能把周围所有人都炸飞。你不是故意的——你只是不知道怎么控制自己的情绪。你爱得热烈，恨得彻底，笑得最大声，哭得最伤心。你是一团火，照亮了所有人，也烧伤了所有人，包括你自己。',
-    guidance: '你的能量是巨大的，但你需要注意控制爆炸的范围。你不需要熄灭自己的火——你需要学会控制火候。你可以在乎，但不要在乎到失去自己。你可以在乎，但不要在乎到伤害别人。你的火是你的天赋，不是你的诅咒。学会控制它，你就能照亮更远的地方。',
-    insight: '大炮的威力不在于它发射了多少炮弹。大炮的威力在于它选择不发射的那一刻。'
-  },
-  '1000': {
-    name: '躺平艺术家',
-    subtitle: '把逃避活成了行为艺术，把懒惰包装成哲学',
-    typeCode: 'TPYS',
-    desc: '你是那种能把"什么都不做"变成一种艺术形式的人。你不是懒——你是选择了另一种生活方式。你把躺平上升到了哲学高度，用理论指导实践，用实践验证理论。你的床是你创作的画布，你的天花板是你凝视的星空。你看起来什么都不在乎，但你比大多数人都更清楚自己想要什么。',
-    guidance: '你的躺平是一种选择，不要让它变成一个牢笼。你可以选择躺平，但你也要确保当你想站起来的时候，你还有站起来的能力。你不需要向任何人证明你"在努力"——但你需要向自己证明，你还有选择的能力。偶尔站起来，做一件小事，然后继续躺下。这就够了。',
-    insight: '躺平不是终点。躺平是另一个起点——一个你选择不再被世界推着走的起点。'
-  },
-  '1001': {
-    name: '隐形人',
-    subtitle: '在人群中隐身，在独处时消失',
-    typeCode: 'YXR',
-    desc: '你是那种在人群中永远不会被注意到的人。你不是不想被注意——你是已经习惯了不被注意。你的朋友圈最近一条是三年前，你的微信签名是一个句号，你的存在感低到连推销电话都不会打给你。你不是消失了——你只是选择了隐身。',
-    guidance: '你不需要变得"显眼"。你可以选择隐身，但你也要确保当你想被看见的时候，你还有被看见的能力。你不需要一百个人注意到你——你只需要一两个人真正看见你。去找他们。或者——让他们找到你。有时候你需要做的只是把门留一条缝。',
-    insight: '隐形人不是不存在。隐形人是选择了不被看见——但不被看见，不代表没有人想看见你。'
-  },
-  '1010': {
-    name: '社交机器人',
-    subtitle: '用逻辑处理人际关系，用程序设定情感反应',
-    typeCode: 'SJQR',
-    desc: '你已经完全数字化了。你用逻辑处理人际关系，用算法优化生活，用数据指导决策。你像一台精密的机器——高效、准确、无情。你曾经讨厌这样的人，但现在你已经变成了这样的人。你不是没有感情，你是把感情格式化了。你不是没有灵魂，你是把灵魂上传到了云端。',
-    guidance: '你不需要"找回人性"。你已经很人性了——因为你选择了这种活法。但你需要偶尔问问自己：我这样活着，快乐吗？如果答案是"不知道"，那就试着做一件"没有效率"的事——比如发呆、比如散步、比如和朋友聊一些"没用"的话题。你不需要变成人，你只需要偶尔——像人一样活着。',
-    insight: '机器最像人的时刻，是它开始怀疑自己是不是机器的那一刻。'
-  },
-  '1011': {
-    name: '讨好型人格患者',
-    subtitle: '用讨好换取存在感，用委屈维持关系',
-    typeCode: 'THXG',
-    desc: '你是那种永远在说"好的"的人。你不敢拒绝，不敢生气，不敢表达真实的想法。你用讨好换取存在感，用委屈维持关系。你像一个永远在微笑的服务员——但你服务的不是别人，是别人对你的期待。你最怕的不是被拒绝，是被讨厌。',
-    guidance: '你不需要所有人都喜欢你。你不需要通过讨好来证明自己的价值。你已经够好了——不是因为你为别人做了什么，而是因为你就是你。那些因为你不再讨好就离开的人，从一开始就不曾真正喜欢你——他们只喜欢你能给他们什么。你值得别人不需要任何理由地留在你身边。',
-    insight: '讨好不是善良。讨好是恐惧——害怕不被接受，害怕被抛弃。但真正的善良，是即使有可能被拒绝，依然选择善良。'
-  },
-  '1100': {
-    name: '摆烂哲学家',
-    subtitle: '把摆烂上升到理论高度，用理论指导摆烂',
-    typeCode: 'BLZX',
-    desc: '你是那种能把"什么都不做"变成一种哲学体系的人。你不是懒——你是看透了。你觉得这个世界很荒谬，而你选择用摆烂来回应这种荒谬。你的摆烂不是消极——是一种消极的积极。你用不行动来反抗行动，用不努力来反抗努力。',
-    guidance: '你的摆烂是一种哲学，但哲学不应该成为逃避的借口。你可以选择不参与这个游戏，但你也要问自己：你在乎什么？有没有一件事情，值得你为之动一动？哪怕只是一件很小的事？如果有——那就为它动一动。不是为了世界，是为了你自己。',
-    insight: '摆烂不是终点。摆烂是你对这个世界说"不"的方式。但说"不"之后，你还要说点什么——哪怕只是"我在这里"。'
-  },
-  '1101': {
-    name: '丧系网红',
-    subtitle: '把丧当成人设，把绝望当成流量',
-    typeCode: 'SXWH',
-    desc: '你是那种能把"我很丧"变成一种人设的人。你在社交媒体上分享你的绝望、你的焦虑、你的深夜崩溃。你把丧当成了流量密码，把痛苦当成了内容素材。你看起来很"真实"，但只有你知道，这个"真实"也是表演的一部分。',
-    guidance: '你的"丧"是真实的，但你的"人设"不是。你不需要通过分享痛苦来获得关注。你可以在不分享的情况下，依然被在乎。你不需要把每一次崩溃都变成一条动态。有些痛苦，值得你一个人慢慢消化——不是因为你不值得被关心，而是因为有些痛苦太私人了，不适合公开。',
-    insight: '丧不是人设。丧是一种真实的情绪。但当你把丧变成人设的时候，你就失去了真正面对它的机会。'
-  },
-  '1110': {
-    name: '情绪吸血鬼',
-    subtitle: '吸收他人情绪当养分，然后转身就跑',
-    typeCode: 'QXXX',
-    desc: '你是那种能敏锐地感知到所有人情绪的人。你像一个情绪吸血鬼，吸收他人的情绪当养分——不是为了帮助他们，而是为了满足自己。你知道怎么让别人信任你，怎么让别人向你倾诉，怎么在获取了你需要的信息后全身而退。你是一个情绪的掠食者。',
-    guidance: '你的敏感是一种天赋，但你选择用它来掠夺而不是治愈。你不需要通过吸收别人的情绪来获得存在感。你自己的情绪已经足够丰富了——你只需要学会面对自己的，而不是别人的。当你下次想要"吸收"别人的情绪时，试着问自己：我现在自己的情绪是什么？我需要的是什么？',
-    insight: '吸血鬼不是天生的。吸血鬼是那些不知道怎么面对自己情绪的人——所以他们选择面对别人的。'
-  },
-  '1111': {
-    name: '人间清醒患者Pro',
-    subtitle: '清醒地看着自己沉沦，还要直播过程',
-    typeCode: 'RJQXPRO',
-    desc: '你是那种看透了一切但依然选择装傻，而且还把"装傻"的过程直播给所有人看的人。你知道这个世界的荒谬，你知道努力不一定有回报，你知道"公平"只是用来安慰弱者的谎言。但你不仅选择了继续，还选择了把这一切都拍下来，配上BGM，发到社交媒体上。',
-    guidance: '你的清醒是一种天赋，但你的"直播"是一种选择。你不需要向任何人证明你"看透了"。你可以在看透之后，选择安静地活着。不是为了别人，是为了自己。你不需要把每一次崩溃都变成内容，不需要把每一次清醒都变成段子。有些东西，值得你一个人慢慢品味。',
-    insight: '清醒的人不是最痛苦的。清醒的人是最孤独的——因为他们看到了别人看不到的东西，却没有人在乎他们看到了什么。'
-  },
-
-  // 特殊原型
-  'special_1': {
-    name: '已死但还在呼吸',
-    subtitle: '精神死亡，肉体还在打卡',
-    typeCode: 'YSHX',
-    desc: '你已经到达了一种超凡脱俗的境界——不是成仙，是成鬼。你的精神已经死了，但你的肉体还在顽强地活着。你每天早上起床、上班、下班、睡觉，像一台没有灵魂的机器。你不是不想活，你是不知道怎么活。你不是不想死，你是不敢死。所以你就这样——已死但还在呼吸。',
-    guidance: '你不需要"找到人生的意义"。你只需要找到一个让你愿意起床的理由。哪怕那个理由很小——一杯好喝的咖啡、一首好听的歌、一个你关心的人。从这些小事开始。你不需要立刻活过来。你只需要先——不那么想死。',
-    insight: '呼吸本身就是一种奇迹。你还在呼吸，说明你还没有放弃。'
-  },
-  'special_2': {
-    name: '人间核弹',
-    subtitle: '随时可能爆炸，炸完自己也粉身碎骨',
-    typeCode: 'RJHD',
-    desc: '你是一颗行走的核弹。你的情绪随时可能爆炸，而爆炸的范围包括你自己。你爱得热烈，恨得彻底，笑得最大声，哭得最伤心。你不在乎别人的眼光，因为你在乎的东西太多了——多到你已经顾不上别人了。你是一团火，照亮了所有人，也烧伤了所有人，包括你自己。',
-    guidance: '你的能量是巨大的，但你需要注意控制爆炸的范围。你不需要熄灭自己的火——你需要学会控制火候。你可以在乎，但不要在乎到失去自己。你可以在乎，但不要在乎到伤害别人。你的火是你的天赋，不是你的诅咒。学会控制它，你就能照亮更远的地方。',
-    insight: '核弹的威力不在于爆炸的那一刻。核弹的威力在于它选择不爆炸的那一刻。'
-  },
-  'special_3': {
-    name: '赛博机器',
-    subtitle: '已经活成了自己曾经最讨厌的样子',
-    typeCode: 'SBJS',
-    desc: '你已经完全数字化了。你用逻辑处理人际关系，用算法优化生活，用数据指导决策。你像一台精密的机器——高效、准确、无情。你曾经讨厌这样的人，但现在你已经变成了这样的人。你不是没有感情，你是把感情格式化了。你不是没有灵魂，你是把灵魂上传到了云端。',
-    guidance: '你不需要"找回人性"。你已经很人性了——因为你选择了这种活法。但你需要偶尔问问自己：我这样活着，快乐吗？如果答案是"不知道"，那就试着做一件"没有效率"的事——比如发呆、比如散步、比如和朋友聊一些"没用"的话题。你不需要变成人，你只需要偶尔——像人一样活着。',
-    insight: '机器最像人的时刻，是它开始怀疑自己是不是机器的那一刻。'
-  },
-  'special_4': {
-    name: '情绪黑洞',
-    subtitle: '吸收一切情绪，然后把世界拖入深渊',
-    typeCode: 'QXHD',
-    desc: '你是一个情绪黑洞。你吸收所有人的情绪——快乐、悲伤、愤怒、恐惧——然后把它们转化为更深的黑暗。你不是故意的，你只是无法控制自己的引力。你身边的人会被你吸引，然后被你吞噬。你不想伤害任何人，但你停不下来。你是一场灾难，一场只有你知道的灾难。',
-    guidance: '你需要学会控制自己的引力。你不需要关闭自己的情感通道——你需要学会选择性地开放。你可以在乎别人，但不要在乎到失去自己。你可以在乎别人，但不要在乎到把别人拖入深渊。你不需要变成太阳，你只需要学会——不那么黑。',
-    insight: '黑洞不是终点。黑洞是另一个宇宙的起点。'
-  }
-};
-
-// ── Scoring Configuration ──────────────────────────────
-const scoringConfig = {
-  confidenceThreshold: 1.0,
-  maxQuestions: 30,
-  minQuestions: 21,
-  validityCheckCount: 3,
-  dimensions: {
-    stress: { min: 0, max: 100 },
-    emotion: { min: 0, max: 100 },
-    social: { min: 0, max: 100 },
-    decision: { min: 0, max: 100 }
-  },
-  composite: {
-    socialAdapt: 0.3,
-    mentalHealth: 0.3,
-    emotionalStability: 0.2,
-    socialHealth: 0.1,
-    decisionHealth: 0.1
-  }
-};
-
-// ── State ──────────────────────────────────────────────
-let currentQuestion = null;
-let questionCount = 0;
-
-// ── URL 参数处理 ─────────────────────────────
-function getUrlParam(key) {
-  const params = new URLSearchParams(window.location.search);
-  return params.get(key);
-}
-
-function setUrlParam(key, value) {
-  const url = new URL(window.location);
-  url.searchParams.set(key, value);
-  history.replaceState(null, '', url);
-}
-
-// ── Navigation ─────────────────────────────────────────
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + id).classList.add('active');
-}
-
-function renderIntro() {
-  const introHTML = `
-    <div class="intro-content">
-      <div class="corner-seal">鑒定</div>
-      <div class="symbol">🖋</div>
-      <h1>精神状态鉴定中心</h1>
-      <p class="dateline">本中心受理诸君精神之鉴定 · 基于人格心理学框架 · 定其原型</p>
-      <p class="subtitle">
-        本测试基于大五人格心理学框架设计。<br>
-        题目数量因人而异，系统会根据你的回答动态调整。<br>
-        做完之后你可能觉得自己被看穿了。<br>
-        这很正常。这不是你疯了。是世界疯了。
-      </p>
-      <button class="btn" onclick="startQuiz()">开始鉴定</button>
-    </div>
-  `;
-  document.getElementById('screen-intro').innerHTML = introHTML;
-}
-
-function startQuiz() {
-  adaptiveState = {
-    phase: 'explore',
-    askedQuestions: [],
-    dimensionAnswers: { stress: [], emotion: [], social: [], decision: [] },
-    subfacetCoverage: { stress: {}, emotion: {}, social: {}, decision: {} },
-    validityAnswers: [],
-    currentDimension: null,
-    questionCount: 0
-  };
-  questionCount = 0;
-  showScreen('question');
-  currentQuestion = selectNextQuestion();
-  renderQuestion();
-}
-
-function restartQuiz() {
-  const url = new URL(window.location);
-  url.searchParams.delete('r');
-  history.replaceState(null, '', url);
-  renderIntro();
-  showScreen('intro');
-}
-
-// ── Render Question ────────────────────────────────────
-function renderQuestion() {
-  if (!currentQuestion) return;
-  const q = currentQuestion;
-  document.getElementById('progress-num').textContent = '第 ' + (questionCount + 1) + ' 题';
-  const estimatedProgress = Math.min((questionCount / scoringConfig.maxQuestions) * 100, 95);
-  document.getElementById('progress-fill').style.width = estimatedProgress + '%';
-  document.getElementById('question-text').textContent = q.text;
-
-  const choicesEl = document.getElementById('choices');
-  choicesEl.innerHTML = '';
-
-  q.optionTexts.forEach((text, idx) => {
-    const btn = document.createElement('button');
-    btn.className = 'choice';
-    btn.innerHTML = `<span class="letter">〇</span>${text}`;
-    btn.addEventListener('click', () => answer(idx));
-    choicesEl.appendChild(btn);
-  });
-}
-
-function answer(optionIndex) {
-  const q = currentQuestion;
-
-  if (q.dimension === 'validity') {
-    adaptiveState.validityAnswers.push({
-      questionId: q.id,
-      expected: q.validityCheck,
-      actual: optionIndex
-    });
-  } else {
-    const likertScore = applyPolarity(getLikertScore(optionIndex, q), q);
-    adaptiveState.dimensionAnswers[q.dimension].push(likertScore);
-    if (!adaptiveState.subfacetCoverage[q.dimension]) {
-      adaptiveState.subfacetCoverage[q.dimension] = {};
-    }
-    adaptiveState.subfacetCoverage[q.dimension][q.subfacet] = true;
-  }
-
-  adaptiveState.askedQuestions.push(q.id);
-  adaptiveState.questionCount++;
-  questionCount++;
-
-  const screen = document.getElementById('screen-question');
-  screen.style.opacity = '0';
-  screen.style.transform = 'translateY(12px)';
-
-  setTimeout(() => {
-    const phase = determinePhase();
-    if (phase === 'done' || (phase === 'validity' && adaptiveState.askedQuestions.filter(id => id.startsWith('validity')).length >= scoringConfig.validityCheckCount)) {
-      showResult();
-      return;
-    }
-    currentQuestion = selectNextQuestion();
-    if (!currentQuestion) {
-      showResult();
-      return;
-    }
-    renderQuestion();
-    screen.style.opacity = '1';
-    screen.style.transform = 'translateY(0)';
-  }, 300);
-}
-
-// ── Likert Scoring Engine ──────────────────────────────
-
-/**
- * 将选项索引（0-based）转换为Likert分数（1-5），根据选项数量进行映射
- * @param {number} optionIndex - 0-based选项索引
- * @param {object} question - 题目对象，包含options（选项数量）
- * @returns {number} Likert分数（1-5范围）
- */
-function getLikertScore(optionIndex, question) {
-  const n = question.options;
-  if (n === 5) {
-    return optionIndex + 1;
-  } else if (n === 6) {
-    const mapping = [1, 2, 2.67, 3.33, 4, 5];
-    return mapping[optionIndex];
-  } else if (n === 4) {
-    return (optionIndex) * (4 / 3) + 1;
-  }
-  return optionIndex + 1;
-}
-
-/**
- * 应用极性反转：若question.polarity === 'reverse'，则反转评分
- * @param {number} score - Likert分数
- * @param {object} question - 题目对象，包含polarity字段
- * @returns {number} 应用极性后的分数
- */
-function applyPolarity(score, question) {
-  if (question.polarity === 'reverse') {
-    return 6 - score;
-  }
-  return score;
-}
-
-/**
- * 计算答案列表的标准差，用于衡量置信度
- * 标准差越小，说明答案越一致，置信度越高
- * @param {number[]} dimensionAnswers - 某维度的Likert分数数组
- * @returns {number} 标准差（<2个数据时返回Infinity）
- */
-function calculateConfidence(dimensionAnswers) {
-  if (dimensionAnswers.length < 2) return Infinity;
-  const mean = dimensionAnswers.reduce((s, v) => s + v, 0) / dimensionAnswers.length;
-  const variance = dimensionAnswers.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / dimensionAnswers.length;
-  return Math.sqrt(variance);
-}
-
-/**
- * 将答案数组的原始分数标准化到0-100的维度指数
- * @param {number[]} answers - 某维度的Likert分数数组（每项1-5）
- * @returns {number} 标准化后的维度指数（0-100）
- */
-function calculateDimensionIndex(answers) {
-  if (answers.length === 0) return 50;
-  const minPossible = answers.length * 1;
-  const maxPossible = answers.length * 5;
-  const rawScore = answers.reduce((s, v) => s + v, 0);
-  return Math.round(((rawScore - minPossible) / (maxPossible - minPossible)) * 100);
-}
-
-function calculateCompositeScores(dimensionIndices) {
-  const socialAdapt = Math.round(
-    (dimensionIndices.stress * 0.3) +
-    (dimensionIndices.emotion * 0.3) +
-    (dimensionIndices.social * 0.2) +
-    (dimensionIndices.decision * 0.2)
-  );
-
-  const mentalHealth = Math.round(
-    (dimensionIndices.emotion * 0.4) +
-    (dimensionIndices.stress * 0.3) +
-    (dimensionIndices.social * 0.3)
-  );
-
-  const emotionalStability = Math.round(
-    (100 - Math.abs(dimensionIndices.emotion - 50)) * 0.5 +
-    (100 - Math.abs(dimensionIndices.stress - 50)) * 0.5
-  );
-
-  const socialHealth = Math.round(
-    (dimensionIndices.social * 0.6) +
-    (dimensionIndices.emotion * 0.4)
-  );
-
-  const decisionHealth = Math.round(
-    (dimensionIndices.decision * 0.6) +
-    (dimensionIndices.stress * 0.4)
-  );
-
-  return {
-    socialAdapt,
-    mentalHealth,
-    emotionalStability,
-    socialHealth,
-    decisionHealth
-  };
-}
-
-function calculateOverallScore(compositeScores) {
-  return Math.round(
-    (compositeScores.socialAdapt * scoringConfig.composite.socialAdapt) +
-    (compositeScores.mentalHealth * scoringConfig.composite.mentalHealth) +
-    (compositeScores.emotionalStability * scoringConfig.composite.emotionalStability) +
-    (compositeScores.socialHealth * scoringConfig.composite.socialHealth) +
-    (compositeScores.decisionHealth * scoringConfig.composite.decisionHealth)
-  );
-}
-
-// ── Adaptive Engine ────────────────────────────────────
-
-let adaptiveState = {
-  phase: 'explore',
-  askedQuestions: [],
-  dimensionAnswers: { stress: [], emotion: [], social: [], decision: [] },
-  subfacetCoverage: { stress: {}, emotion: {}, social: {}, decision: {} },
-  validityAnswers: [],
-  currentDimension: null,
-  questionCount: 0
-};
-
-function determinePhase() {
-  const state = adaptiveState;
-  if (state.questionCount >= scoringConfig.maxQuestions - scoringConfig.validityCheckCount) {
-    return 'validity';
-  }
-  if (state.questionCount < 8) {
-    return 'explore';
-  }
-  const allConfident = ['stress', 'emotion', 'social', 'decision'].every(d => {
-    return calculateConfidence(state.dimensionAnswers[d]) < scoringConfig.confidenceThreshold
-      || state.dimensionAnswers[d].length >= 5;
-  });
-  if (allConfident) {
-    return state.questionCount < scoringConfig.minQuestions ? 'confirm' : 'validity';
-  }
-  if (state.questionCount >= scoringConfig.minQuestions - scoringConfig.validityCheckCount) {
-    return 'confirm';
-  }
-  return 'discriminate';
-}
-
-function selectNextDimension() {
-  const state = adaptiveState;
-  const dimensions = ['stress', 'emotion', 'social', 'decision'];
-  const scored = dimensions.map(d => ({
-    dimension: d,
-    confidence: calculateConfidence(state.dimensionAnswers[d]),
-    count: state.dimensionAnswers[d].length
-  }));
-
-  if (state.phase === 'explore') {
-    return scored.sort((a, b) => a.count - b.count)[0].dimension;
-  }
-  if (state.phase === 'discriminate') {
-    return scored.sort((a, b) => a.confidence - b.confidence)[0].dimension;
-  }
-  if (state.phase === 'confirm') {
-    return scored.sort((a, b) => a.count - b.count)[0].dimension;
-  }
-  return scored[0].dimension;
-}
-
-function selectNextQuestion() {
-  const state = adaptiveState;
-  const phase = determinePhase();
-  state.phase = phase;
-
-  if (phase === 'validity') {
-    const validityQs = questionPool.filter(q =>
-      q.dimension === 'validity' && !state.askedQuestions.includes(q.id)
-    );
-    return validityQs[0] || null;
-  }
-
-  const targetDimension = selectNextDimension();
-  state.currentDimension = targetDimension;
-
-  const candidates = questionPool.filter(q => {
-    if (q.dimension === 'validity') return false;
-    if (state.askedQuestions.includes(q.id)) return false;
-    if (q.dimension !== targetDimension) return false;
-    return true;
-  });
-
-  if (candidates.length === 0) {
-    const otherDim = ['stress', 'emotion', 'social', 'decision']
-      .find(d => d !== targetDimension);
-    state.currentDimension = otherDim;
-    return questionPool.find(q =>
-      q.dimension === otherDim && !state.askedQuestions.includes(q.id)
-    ) || null;
-  }
-
-  const scored = candidates.map(q => {
-    let priority = 0;
-    const coverage = state.subfacetCoverage[targetDimension] || {};
-    if (!coverage[q.subfacet]) priority += 100;
-    if (phase === 'explore' && q.difficulty === 'easy') priority += 50;
-    if (phase === 'discriminate' && q.difficulty === 'boundary') priority += 50;
-    if (phase === 'confirm' && q.difficulty === 'extreme') priority += 50;
-    const avgScore = state.dimensionAnswers[targetDimension].length > 0
-      ? state.dimensionAnswers[targetDimension].reduce((s, v) => s + v, 0) / state.dimensionAnswers[targetDimension].length
-      : 3;
-    const currentLeaning = avgScore >= 3 ? 'fight' : 'escape';
-    if (q.leaning !== currentLeaning && q.leaning !== 'neutral') priority += 20;
-    return { question: q, priority };
-  });
-
-  scored.sort((a, b) => b.priority - a.priority);
-  return scored[0].question;
-}
-
-// ── Results ────────────────────────────────────────────
-function checkValidity(validityAnswers) {
-  if (validityAnswers.length === 0) return false;
-  const incorrect = validityAnswers.filter(a => a.actual !== a.expected);
-  return incorrect.length >= 2;
-}
-
-function showResult() {
-  const state = adaptiveState;
-  const dimensionIndices = {
-    stress: calculateDimensionIndex(state.dimensionAnswers.stress),
-    emotion: calculateDimensionIndex(state.dimensionAnswers.emotion),
-    social: calculateDimensionIndex(state.dimensionAnswers.social),
-    decision: calculateDimensionIndex(state.dimensionAnswers.decision)
-  };
-  const compositeScores = calculateCompositeScores(dimensionIndices);
-  const overallScore = calculateOverallScore(compositeScores);
-  const archetypeKey = getArchetypeKey(dimensionIndices);
-  const archetype = archetypes[archetypeKey];
-  const validityFailed = checkValidity(state.validityAnswers);
-  renderResultPage(dimensionIndices, compositeScores, overallScore, archetype, validityFailed);
-  setUrlParam('r', archetypeKey);
-}
-
-function getArchetypeKey(indices) {
-  const rawAllLow = ['stress', 'emotion', 'social', 'decision'].every(d => {
-    const answers = adaptiveState.dimensionAnswers[d];
-    return answers.length > 0 && answers.reduce((s, v) => s + v, 0) / answers.length <= 1.5;
-  });
-  const rawAllHigh = ['stress', 'emotion', 'social', 'decision'].every(d => {
-    const answers = adaptiveState.dimensionAnswers[d];
-    return answers.length > 0 && answers.reduce((s, v) => s + v, 0) / answers.length >= 4.5;
-  });
-  if (rawAllLow) return 'special_1';
-  if (rawAllHigh) return 'special_2';
-
-  const key = [
-    indices.stress >= 50 ? '1' : '0',
-    indices.emotion >= 50 ? '1' : '0',
-    indices.social >= 50 ? '1' : '0',
-    indices.decision >= 50 ? '1' : '0'
-  ].join('');
-  return key;
-}
-
-function renderResultPage(dimensionIndices, compositeScores, overallScore, archetype, validityFailed) {
-  const validityWarning = validityFailed ? `
-    <div class="result-card" style="border-color: var(--vermilion);">
-      <div class="result-section">
-        <div class="result-label" style="color: var(--vermilion);">⚠ 作答质量提醒</div>
-        <div class="result-text">本次作答可能存在随意填写的情况，结果仅供参考。建议重新认真作答一次。</div>
-      </div>
-    </div>
-  ` : '';
-
-  const resultHTML = `
-    <div class="result-header">
-      <div class="corner-seal">已鑒</div>
-      <div class="result-type">${archetype.typeCode}</div>
-      <div class="result-name">${archetype.name}</div>
-      <div class="result-subtitle">${archetype.subtitle}</div>
-    </div>
-
-    ${validityWarning}
-
-    <div class="result-card">
-      <div class="result-section">
-        <div class="result-label">灵魂肖像</div>
-        <div class="result-text">${archetype.desc}</div>
-      </div>
-      <div class="result-section">
-        <div class="result-label">人生指引</div>
-        <div class="result-text">${archetype.guidance}</div>
-      </div>
-      <div class="result-section">
-        <div class="result-label">哲思</div>
-        <div class="result-text" style="font-style:italic">"${archetype.insight}"</div>
-      </div>
-    </div>
-
-    <div class="result-card">
-      <div class="result-section">
-        <div class="result-label">维度分析</div>
-        ${renderDimensionBars(dimensionIndices)}
-      </div>
-    </div>
-
-    <div class="result-card">
-      <div class="result-section">
-        <div class="result-label">综合指数</div>
-        ${renderCompositeScores(compositeScores, overallScore)}
-      </div>
-    </div>
-
-    <button class="btn btn-restart" onclick="restartQuiz()">重新测试</button>
-
-    <div class="share-section">
-      <div class="share-title">─── 分享你的结果 ───</div>
-      <div class="share-buttons">
-        <button class="btn-share" onclick="copyShareLink()">复制链接</button>
-        <button class="btn-share" onclick="generateShareImage()">保存图片</button>
-      </div>
-      <div class="share-toast" id="share-toast"></div>
-    </div>
-  `;
-
-  document.getElementById('screen-result').innerHTML = resultHTML;
-  showScreen('result');
-}
-
-function copyShareLink() {
-  const url = window.location.href;
-  navigator.clipboard.writeText(url).then(() => {
-    showToast('链接已复制，快去分享吧');
-  }).catch(() => {
-    const input = document.createElement('input');
-    input.value = url;
-    document.body.appendChild(input);
-    input.select();
-    document.execCommand('copy');
-    document.body.removeChild(input);
-    showToast('链接已复制，快去分享吧');
-  });
-}
-
-function showToast(msg) {
-  const toast = document.getElementById('share-toast');
-  if (!toast) return;
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2000);
-}
-
-function generateShareImage() {
-  const shareCanvas = document.createElement('canvas');
-  const sw = 800, sh = 1200;
-  shareCanvas.width = sw;
-  shareCanvas.height = sh;
-  const sctx = shareCanvas.getContext('2d');
-
-  // 获取当前结果数据
-  const nameEl = document.querySelector('.result-name');
-  const typeEl = document.querySelector('.result-type');
-  const subtitleEl = document.querySelector('.result-subtitle');
-  const name = nameEl ? nameEl.textContent : '未知';
-  const typeCode = typeEl ? typeEl.textContent : '';
-  const subtitle = subtitleEl ? subtitleEl.textContent : '';
-
-  // 读取灵魂肖像（截取前100字）和哲思
-  const resultTexts = document.querySelectorAll('.result-text');
-  const soulPortrait = resultTexts.length > 0 ? resultTexts[0].textContent.substring(0, 100) + '…' : '';
-  const insight = resultTexts.length > 2 ? resultTexts[2].textContent : '';
-
-  // 背景
-  sctx.fillStyle = '#e9e2d0';
-  sctx.fillRect(0, 0, sw, sh);
-
-  // 纸纹噪点
-  for (let i = 0; i < 6000; i++) {
-    const x = Math.random() * sw;
-    const y = Math.random() * sh;
-    sctx.fillStyle = `rgba(120,90,40,${Math.random() * 0.04})`;
-    sctx.fillRect(x, y, 1, 1);
-  }
-
-  // 双线上框
-  sctx.strokeStyle = '#1f1810';
-  sctx.lineWidth = 2;
-  sctx.beginPath();
-  sctx.moveTo(50, 40);
-  sctx.lineTo(sw - 50, 40);
-  sctx.stroke();
-  sctx.beginPath();
-  sctx.moveTo(50, 46);
-  sctx.lineTo(sw - 50, 46);
-  sctx.stroke();
-
-  // 双线下框（位置在 onload 中动态绘制）
-
-  // 标题
-  sctx.fillStyle = '#1f1810';
-  sctx.font = 'bold 36px "Noto Serif SC", serif';
-  sctx.textAlign = 'center';
-  sctx.fillText('精神状态鉴定中心', sw / 2, 100);
-
-  // 分隔线
-  sctx.strokeStyle = '#b3a684';
-  sctx.lineWidth = 1;
-  sctx.beginPath();
-  sctx.moveTo(200, 130);
-  sctx.lineTo(sw - 200, 130);
-  sctx.stroke();
-
-  // 类型码
-  sctx.fillStyle = '#a8321f';
-  sctx.font = '24px "Noto Serif SC", serif';
-  sctx.fillText(typeCode, sw / 2, 180);
-
-  // 人格名称（大字）
-  sctx.fillStyle = '#1f1810';
-  sctx.font = 'bold 56px "Noto Serif SC", serif';
-  sctx.fillText(name, sw / 2, 260);
-
-  // 副标题
-  sctx.fillStyle = '#4a3f30';
-  sctx.font = '24px "Noto Serif SC", serif';
-  sctx.fillText(subtitle, sw / 2, 320);
-
-  // 分隔线
-  sctx.strokeStyle = '#b3a684';
-  sctx.beginPath();
-  sctx.moveTo(200, 360);
-  sctx.lineTo(sw - 200, 360);
-  sctx.stroke();
-
-  // 灵魂肖像标签
-  sctx.fillStyle = '#a8321f';
-  sctx.font = 'bold 20px "Noto Serif SC", serif';
-  sctx.textAlign = 'left';
-  sctx.fillText('灵魂肖像', 80, 410);
-
-  // 灵魂肖像内容（自动换行）
-  sctx.fillStyle = '#1f1810';
-  sctx.font = '18px "Noto Serif SC", serif';
-  const maxLineWidth = sw - 160;
-  const lines = wrapText(sctx, soulPortrait, maxLineWidth);
-  lines.forEach((line, i) => {
-    sctx.fillText(line, 80, 445 + i * 28);
-  });
-
-  // 哲思标签
-  const insightY = 445 + lines.length * 28 + 20;
-  sctx.fillStyle = '#a8321f';
-  sctx.font = 'bold 20px "Noto Serif SC", serif';
-  sctx.textAlign = 'left';
-  sctx.fillText('哲思', 80, insightY);
-
-  // 哲思内容
-  sctx.fillStyle = '#4a3f30';
-  sctx.font = 'italic 18px "Noto Serif SC", serif';
-  const insightLines = wrapText(sctx, `"${insight}"`, maxLineWidth);
-  insightLines.forEach((line, i) => {
-    sctx.fillText(line, 80, insightY + 35 + i * 28);
-  });
-
-  // 底部分隔线 — 在二维码区域上方
-  const qrAreaTop = insightY + 35 + insightLines.length * 28 + 30;
-  sctx.strokeStyle = '#b3a684';
-  sctx.beginPath();
-  sctx.moveTo(200, qrAreaTop);
-  sctx.lineTo(sw - 200, qrAreaTop);
-  sctx.stroke();
-
-  // 二维码（使用 API 生成）
-  const baseUrl = window.location.origin + window.location.pathname;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(baseUrl)}`;
-  const qrImg = new Image();
-  qrImg.crossOrigin = 'anonymous';
-  qrImg.onload = function() {
-    const qrSize = 120;
-    const qrX = sw / 2 - qrSize / 2;
-    const qrY = qrAreaTop + 25;
-
-    // 二维码背景（纸色，覆盖白色底色）
-    sctx.fillStyle = '#e9e2d0';
-    sctx.fillRect(qrX - 8, qrY - 8, qrSize + 16, qrSize + 16);
-    sctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
-
-    // 网址文字
-    sctx.fillStyle = '#4a3f30';
-    sctx.font = '16px "Noto Serif SC", serif';
-    sctx.textAlign = 'center';
-    sctx.fillText('扫码测测你是什么品种的精神状态', sw / 2, qrY + qrSize + 28);
-
-    // 裁剪 canvas 到实际内容高度（去掉底部空白）
-    const contentBottom = qrY + qrSize + 60;
-    const finalH = Math.min(contentBottom + 30, sh);
-    const cropped = document.createElement('canvas');
-    cropped.width = sw;
-    cropped.height = finalH;
-    cropped.getContext('2d').drawImage(shareCanvas, 0, 0, sw, finalH, 0, 0, sw, finalH);
-
-    // 在裁剪后的 canvas 上画底部双线框和印章
-    const cctx = cropped.getContext('2d');
-    cctx.strokeStyle = '#1f1810';
-    cctx.lineWidth = 2;
-    cctx.beginPath();
-    cctx.moveTo(50, finalH - 40);
-    cctx.lineTo(sw - 50, finalH - 40);
-    cctx.stroke();
-    cctx.beginPath();
-    cctx.moveTo(50, finalH - 46);
-    cctx.lineTo(sw - 50, finalH - 46);
-    cctx.stroke();
-
-    // 右下角印章
-    cctx.save();
-    cctx.translate(sw - 110, finalH - 80);
-    cctx.rotate(7 * Math.PI / 180);
-    cctx.strokeStyle = '#a8321f';
-    cctx.lineWidth = 2.5;
-    cctx.strokeRect(-28, -28, 56, 56);
-    cctx.fillStyle = '#a8321f';
-    cctx.font = 'bold 22px serif';
-    cctx.textAlign = 'center';
-    cctx.textBaseline = 'middle';
-    cctx.fillText('鑒定', 0, 0);
-    cctx.restore();
-
-    // 下载
-    const link = document.createElement('a');
-    link.download = `精神鉴定-${name}.png`;
-    link.href = cropped.toDataURL('image/png');
-    link.click();
-    showToast('图片已保存');
-  };
-  qrImg.onerror = function() {
-    // 二维码加载失败时，直接下载不含二维码的图片
-    const link = document.createElement('a');
-    link.download = `精神鉴定-${name}.png`;
-    link.href = shareCanvas.toDataURL('image/png');
-    link.click();
-    showToast('图片已保存');
-  };
-  qrImg.src = qrUrl;
-}
-
-// Canvas 文字自动换行辅助函数
-function wrapText(ctx, text, maxWidth) {
-  const lines = [];
-  let currentLine = '';
-  for (let i = 0; i < text.length; i++) {
-    const testLine = currentLine + text[i];
-    if (ctx.measureText(testLine).width > maxWidth && currentLine.length > 0) {
-      lines.push(currentLine);
-      currentLine = text[i];
-    } else {
-      currentLine = testLine;
-    }
-  }
-  if (currentLine) lines.push(currentLine);
-  return lines;
-}
-
-function renderDimensionBars(dimensionIndices) {
-  const dimensions = [
-    { key: 'stress', name: '压力应对', min: '逃避', max: '抗争' },
-    { key: 'emotion', name: '情绪管理', min: '压抑', max: '宣泄' },
-    { key: 'social', name: '社交模式', min: '疏离', max: '连接' },
-    { key: 'decision', name: '决策方式', min: '理性', max: '感性' }
-  ];
-
-  return dimensions.map(dim => `
-    <div class="progress-bar-container">
-      <div class="progress-label">
-        <span>${dim.min}</span>
-        <span class="progress-value">${dimensionIndices[dim.key]}%</span>
-        <span>${dim.max}</span>
-      </div>
-      <div class="dim-progress-bar">
-        <div class="dim-progress-fill" style="width: ${dimensionIndices[dim.key]}%"></div>
-      </div>
-      <div class="progress-label">
-        <span>${dim.name}</span>
-      </div>
-    </div>
-  `).join('');
-}
-
-function renderCompositeScores(compositeScores, overallScore) {
-  const scoreLevel = getScoreLevel(overallScore);
-
-  return `
-    <div class="overall-score">
-      <div class="score-number">${overallScore}</div>
-      <div class="score-label">${scoreLevel.level}</div>
-      <div class="score-description">${scoreLevel.description}</div>
-    </div>
-
-    <div class="composite-scores">
-      <div class="composite-item">
-        <span class="composite-label">社会适应度</span>
-        <span class="composite-value">${compositeScores.socialAdapt}%</span>
-      </div>
-      <div class="composite-item">
-        <span class="composite-label">心理健康度</span>
-        <span class="composite-value">${compositeScores.mentalHealth}%</span>
-      </div>
-      <div class="composite-item">
-        <span class="composite-label">情绪稳定性</span>
-        <span class="composite-value">${compositeScores.emotionalStability}%</span>
-      </div>
-      <div class="composite-item">
-        <span class="composite-label">社交健康度</span>
-        <span class="composite-value">${compositeScores.socialHealth}%</span>
-      </div>
-      <div class="composite-item">
-        <span class="composite-label">决策健康度</span>
-        <span class="composite-value">${compositeScores.decisionHealth}%</span>
-      </div>
-    </div>
-  `;
-}
-
-function getScoreLevel(score) {
-  if (score >= 90) {
-    return { level: '圣人级', description: '你已经超越了世俗的烦恼，达到了精神自由的境界' };
-  } else if (score >= 80) {
-    return { level: '人间清醒', description: '你看透了世界的荒诞，但依然选择温柔地活着' };
-  } else if (score >= 70) {
-    return { level: '正常人类', description: '你和大多数人一样，在崩溃和自愈之间反复横跳' };
-  } else if (score >= 60) {
-    return { level: '轻微内耗', description: '你有一些精神内耗，但还能维持基本功能' };
-  } else if (score >= 50) {
-    return { level: '中度内耗', description: '你的精神状态有点糟，需要关注一下' };
-  } else if (score >= 40) {
-    return { level: '重度内耗', description: '你已经在崩溃的边缘，建议寻求帮助' };
-  } else if (score >= 30) {
-    return { level: '精神濒危', description: '你的精神状态需要紧急干预' };
-  } else {
-    return { level: '已死但还在呼吸', description: '你的精神已经死亡，但肉体还在打卡' };
-  }
-}
-
-// ── 初始化 ──────────────────────────────────────
-const shareKey = getUrlParam('r');
-if (shareKey && archetypes[shareKey]) {
-  // 直接展示分享的结果，跳过答题
-  const archetype = archetypes[shareKey];
-  renderResultPage(
-    { stress: 50, emotion: 50, social: 50, decision: 50 },
-    { socialAdapt: 50, mentalHealth: 50, emotionalStability: 50, socialHealth: 50, decisionHealth: 50 },
-    50,
-    archetype
-  );
-} else {
-  renderIntro();
-}
-
-// ── Service Worker 注册 ──────────────────────
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
-  });
-}
-</script>
-</body>
-</html>
