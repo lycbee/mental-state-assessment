@@ -1256,6 +1256,110 @@ function calculateOverallScore(compositeScores) {
   );
 }
 
+// ── Adaptive Engine ────────────────────────────────────
+
+let adaptiveState = {
+  phase: 'explore',
+  askedQuestions: [],
+  dimensionAnswers: { stress: [], emotion: [], social: [], decision: [] },
+  subfacetCoverage: { stress: {}, emotion: {}, social: {}, decision: {} },
+  validityAnswers: [],
+  currentDimension: null,
+  questionCount: 0
+};
+
+function determinePhase() {
+  const state = adaptiveState;
+  if (state.questionCount >= scoringConfig.maxQuestions - scoringConfig.validityCheckCount) {
+    return 'validity';
+  }
+  if (state.questionCount < 8) {
+    return 'explore';
+  }
+  const allConfident = ['stress', 'emotion', 'social', 'decision'].every(d => {
+    return calculateConfidence(state.dimensionAnswers[d]) < scoringConfig.confidenceThreshold
+      || state.dimensionAnswers[d].length >= 5;
+  });
+  if (allConfident) {
+    return state.questionCount < scoringConfig.minQuestions ? 'confirm' : 'validity';
+  }
+  if (state.questionCount >= scoringConfig.minQuestions - scoringConfig.validityCheckCount) {
+    return 'confirm';
+  }
+  return 'discriminate';
+}
+
+function selectNextDimension() {
+  const state = adaptiveState;
+  const dimensions = ['stress', 'emotion', 'social', 'decision'];
+  const scored = dimensions.map(d => ({
+    dimension: d,
+    confidence: calculateConfidence(state.dimensionAnswers[d]),
+    count: state.dimensionAnswers[d].length
+  }));
+
+  if (state.phase === 'explore') {
+    return scored.sort((a, b) => a.count - b.count)[0].dimension;
+  }
+  if (state.phase === 'discriminate') {
+    return scored.sort((a, b) => a.confidence - b.confidence)[0].dimension;
+  }
+  if (state.phase === 'confirm') {
+    return scored.sort((a, b) => a.count - b.count)[0].dimension;
+  }
+  return scored[0].dimension;
+}
+
+function selectNextQuestion() {
+  const state = adaptiveState;
+  const phase = determinePhase();
+  state.phase = phase;
+
+  if (phase === 'validity') {
+    const validityQs = questionPool.filter(q =>
+      q.dimension === 'validity' && !state.askedQuestions.includes(q.id)
+    );
+    return validityQs[0] || null;
+  }
+
+  const targetDimension = selectNextDimension();
+  state.currentDimension = targetDimension;
+
+  const candidates = questionPool.filter(q => {
+    if (q.dimension === 'validity') return false;
+    if (state.askedQuestions.includes(q.id)) return false;
+    if (q.dimension !== targetDimension) return false;
+    return true;
+  });
+
+  if (candidates.length === 0) {
+    const otherDim = ['stress', 'emotion', 'social', 'decision']
+      .find(d => d !== targetDimension);
+    state.currentDimension = otherDim;
+    return questionPool.find(q =>
+      q.dimension === otherDim && !state.askedQuestions.includes(q.id)
+    ) || null;
+  }
+
+  const scored = candidates.map(q => {
+    let priority = 0;
+    const coverage = state.subfacetCoverage[targetDimension] || {};
+    if (!coverage[q.subfacet]) priority += 100;
+    if (phase === 'explore' && q.difficulty === 'easy') priority += 50;
+    if (phase === 'discriminate' && q.difficulty === 'boundary') priority += 50;
+    if (phase === 'confirm' && q.difficulty === 'extreme') priority += 50;
+    const avgScore = state.dimensionAnswers[targetDimension].length > 0
+      ? state.dimensionAnswers[targetDimension].reduce((s, v) => s + v, 0) / state.dimensionAnswers[targetDimension].length
+      : 3;
+    const currentLeaning = avgScore >= 3 ? 'fight' : 'escape';
+    if (q.leaning !== currentLeaning && q.leaning !== 'neutral') priority += 20;
+    return { question: q, priority };
+  });
+
+  scored.sort((a, b) => b.priority - a.priority);
+  return scored[0].question;
+}
+
 // ── Results ────────────────────────────────────────────
 function showResult() {
   const rawScores = calculateScores();
