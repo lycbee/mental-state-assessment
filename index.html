@@ -1334,61 +1334,60 @@ function selectNextQuestion() {
 }
 
 // ── Results ────────────────────────────────────────────
+function checkValidity(validityAnswers) {
+  if (validityAnswers.length === 0) return false;
+  const incorrect = validityAnswers.filter(a => a.actual !== a.expected);
+  return incorrect.length >= 2;
+}
+
 function showResult() {
-  const rawScores = calculateScores();
-
-  // 计算维度指数
+  const state = adaptiveState;
   const dimensionIndices = {
-    stress: calculateDimensionIndex(rawScores.stress, 'stress'),
-    emotion: calculateDimensionIndex(rawScores.emotion, 'emotion'),
-    social: calculateDimensionIndex(rawScores.social, 'social'),
-    decision: calculateDimensionIndex(rawScores.decision, 'decision')
+    stress: calculateDimensionIndex(state.dimensionAnswers.stress),
+    emotion: calculateDimensionIndex(state.dimensionAnswers.emotion),
+    social: calculateDimensionIndex(state.dimensionAnswers.social),
+    decision: calculateDimensionIndex(state.dimensionAnswers.decision)
   };
-
-  // 计算综合指数
   const compositeScores = calculateCompositeScores(dimensionIndices);
-
-  // 计算综合评分
   const overallScore = calculateOverallScore(compositeScores);
-
-  // 确定原型
-  const archetypeKey = getArchetypeKey(rawScores);
+  const archetypeKey = getArchetypeKey(dimensionIndices);
   const archetype = archetypes[archetypeKey];
-
-  // 渲染结果页面
-  renderResultPage(dimensionIndices, compositeScores, overallScore, archetype);
-
-  // 更新 URL 参数，便于分享
+  const validityFailed = checkValidity(state.validityAnswers);
+  renderResultPage(dimensionIndices, compositeScores, overallScore, archetype, validityFailed);
   setUrlParam('r', archetypeKey);
 }
 
-function getArchetypeKey(scores) {
-  // 检查特殊原型
-  if (scores.stress <= -18 && scores.emotion <= -18 && scores.social <= -18 && scores.decision <= -18) {
-    return 'special_1';
-  }
-  if (scores.stress >= 18 && scores.emotion >= 18 && scores.social >= 18 && scores.decision >= 18) {
-    return 'special_2';
-  }
-  if (scores.decision >= 18 && scores.social >= 18 && scores.emotion <= -18 && scores.stress <= -18) {
-    return 'special_3';
-  }
-  if (scores.decision <= -18 && scores.social <= -18 && scores.emotion >= 18 && scores.stress >= 18) {
-    return 'special_4';
-  }
+function getArchetypeKey(indices) {
+  const rawAllLow = ['stress', 'emotion', 'social', 'decision'].every(d => {
+    const answers = adaptiveState.dimensionAnswers[d];
+    return answers.length > 0 && answers.reduce((s, v) => s + v, 0) / answers.length <= 1.5;
+  });
+  const rawAllHigh = ['stress', 'emotion', 'social', 'decision'].every(d => {
+    const answers = adaptiveState.dimensionAnswers[d];
+    return answers.length > 0 && answers.reduce((s, v) => s + v, 0) / answers.length >= 4.5;
+  });
+  if (rawAllLow) return 'special_1';
+  if (rawAllHigh) return 'special_2';
 
-  // 基础原型映射
   const key = [
-    scores.stress >= 0 ? '1' : '0',
-    scores.emotion >= 0 ? '1' : '0',
-    scores.social >= 0 ? '1' : '0',
-    scores.decision >= 0 ? '1' : '0'
+    indices.stress >= 50 ? '1' : '0',
+    indices.emotion >= 50 ? '1' : '0',
+    indices.social >= 50 ? '1' : '0',
+    indices.decision >= 50 ? '1' : '0'
   ].join('');
-
   return key;
 }
 
-function renderResultPage(dimensionIndices, compositeScores, overallScore, archetype) {
+function renderResultPage(dimensionIndices, compositeScores, overallScore, archetype, validityFailed) {
+  const validityWarning = validityFailed ? `
+    <div class="result-card" style="border-color: var(--vermilion);">
+      <div class="result-section">
+        <div class="result-label" style="color: var(--vermilion);">⚠ 作答质量提醒</div>
+        <div class="result-text">本次作答可能存在随意填写的情况，结果仅供参考。建议重新认真作答一次。</div>
+      </div>
+    </div>
+  ` : '';
+
   const resultHTML = `
     <div class="result-header">
       <div class="corner-seal">已鑒</div>
@@ -1396,6 +1395,8 @@ function renderResultPage(dimensionIndices, compositeScores, overallScore, arche
       <div class="result-name">${archetype.name}</div>
       <div class="result-subtitle">${archetype.subtitle}</div>
     </div>
+
+    ${validityWarning}
 
     <div class="result-card">
       <div class="result-section">
